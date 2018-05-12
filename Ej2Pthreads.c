@@ -34,6 +34,19 @@ typedef struct param
 basetype *A;
 basetype *B;
 basetype *C;	// Matriz resultado
+basetype *D;
+basetype *E;
+basetype *F;
+basetype *L;
+basetype *U;
+basetype *sumaParcialB;
+
+basetype promB;
+basetype promL;
+basetype promU;
+basetype prodLU;
+
+
 
 int cant_filas_restantes;	// Cantidad de filas que restan ordenar
 int cant_filas_x_thread;	// Cantidad de filas que procesa cada thread en cada iteración (va disminuyendo)
@@ -59,6 +72,10 @@ void promedioB(param* parametro);
 void prodPromLU(param* parametro);
 void imprimir_matriz (basetype * matriz,int N);
 double dwalltime();
+
+
+
+//-- caca
 double tiempo_copia_total=0;
 
 #ifdef COMPARAR_SECUENCIAL
@@ -89,8 +106,8 @@ int main(int argc,char *argv[])
 	printf("Dimensión de la matriz: %d*%d \n",N,N);
 
 	//Vector usado para guardar las sumas parciales de la matriz B para luego hacer el promedio
-	double * sumaParcialB = (basetype*)malloc(sizeof(basetype)*CANT_THREADS);
-	double promB;
+	sumaParcialB = (basetype*)malloc(sizeof(basetype)*CANT_THREADS);
+	basetype promB;
 
 	// Reserva de memoria para las matrices
 	A=(basetype*)malloc(sizeof(basetype)*N*N);			// Reserva memoria para A
@@ -118,26 +135,21 @@ int main(int argc,char *argv[])
 			D[i*N+j]=rand()%5; 	// Inicializa matriz B con random
 			E[i*N+j]=rand()%5; 	// Inicializa matriz B con random
 			F[i*N+j]=rand()%5; 	// Inicializa matriz B con random
-		}
-	}
 
-	//inicializo las matrices triangulares L y U
-	for (int i = 0; i < N; ++i)
-	{
-		for (int j = 0; j < N; ++j)
-		{
 			if(i>j)
 			{
-				U[i*N+j]=rand%5;
+				U[i*N+j]=rand()%5;
 				L[i*N+j]=0;	
 			}
 			else
 			{
-				L[i*N+j]=rand%5;
+				L[i*N+j]=rand()%5;
 				U[i*N+j]=0;	
 			}
 		}
 	}
+
+	
 
 
 	param parametros[CANT_THREADS];	// Arreglo de param (struct que contiene los datos para pasar a los threads)
