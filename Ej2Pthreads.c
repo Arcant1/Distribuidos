@@ -39,13 +39,26 @@ basetype *E;
 basetype *F;
 basetype *L;
 basetype *U;
-basetype *sumaParcialB;
+basetype *LT;
+basetype *UT;
 
 basetype promB;
-basetype promL;
-basetype promU;
+basetype promL=0;
+basetype promU=0;
 basetype prodLU;
 
+//-- matrices de resultados intermedios
+basetype *sumaParcialB;
+basetype *sumaL;
+basetype *sumaU;
+basetype * ULA;
+basetype * AC;
+basetype * bL;
+basetype * BE;
+basetype * bD;
+basetype * UF;
+
+//--
 
 
 int cant_filas_restantes;	// Cantidad de filas que restan ordenar
@@ -72,6 +85,7 @@ void multiplicacion(param *parametro);
 void promedioB(param* parametro);
 void prodPromLU(param* parametro);
 void imprimir_matriz (basetype * matriz,int N);
+void suma_matriz (basetype * m1, basetype * m2, basetype * res, int N);
 double dwalltime();
 
 
@@ -111,6 +125,12 @@ int main(int argc,char *argv[])
 	sumaParcialB = (basetype*)malloc(sizeof(basetype)*CANT_THREADS);
 	basetype promB;
 
+
+	// -- Arreglos usados para calcular promedios 
+	sumaL = (basetype*)malloc(sizeof(basetype)*CANT_THREADS);
+	sumaU = (basetype*)malloc(sizeof(basetype)*CANT_THREADS);
+
+
 	// Reserva de memoria para las matrices
 	A=(basetype*)malloc(sizeof(basetype)*N*N);			// Reserva memoria para A
 	B=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para B
@@ -120,8 +140,12 @@ int main(int argc,char *argv[])
 	F=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para F
 
 	// -- caso especial de matrices triangulares
-	L=(basetype*)malloc(NT*sizeof(basetype));			// Reserva memoria para L
-	U=(basetype*)malloc(NT*sizeof(basetype));			// Reserva memoria para U	
+	L=(basetype*)malloc(N*sizeof(basetype));			// Reserva memoria para L
+	U=(basetype*)malloc(N*sizeof(basetype));			// Reserva memoria para U	
+
+
+	LT=(basetype*)malloc(NT*sizeof(basetype));			// Reserva memoria para L transformada para ahorrar espacio
+	UT=(basetype*)malloc(NT*sizeof(basetype));			// Reserva memoria para U transformada para ahorrar espacio	
 
 	#ifdef COMPARAR_SECUENCIAL
 	C_secuencial=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para C_SECUENCIAL
@@ -148,12 +172,36 @@ int main(int argc,char *argv[])
 	{
 		for (int j = 0; j < NT; ++j)
 		{
-			U[i+j*(j+1)/2]=rand()%5;
-			L[i+N*j - i*(i+1)/2]=rand()%5;
+			if(i==j)
+			{
+				L[i+N*j]=rand()%5;
+				U[i*N+j]=rand()%5;
+			}
+			else if(i>j)
+			{
+				U[i*N+j]=rand()%5;
+				L[i+N*j]=0;
+			}
+			else
+			{
+				L[i+N*j]=rand()%5;
+				U[i*N+j]=0;	
+			}
 		}
 	}
 
-	
+	// -- Transformo las matrices triangulares en matrices cuadradas para ahorrar espacio y libero el espacio ocupado por las triangulares
+
+	for (int i = 0; i < NT; ++i)
+	{
+		for (int j = 0; j < NT; ++j)
+		{
+			LT[j+i*(i+1)/2]=L[i+j*N];
+			UT[i+j*(j+1)/2]=U[i*N+j];
+		}
+	}
+	free(U);
+	free(L);
 
 
 	param parametros[CANT_THREADS];	// Arreglo de param (struct que contiene los datos para pasar a los threads)
@@ -211,8 +259,6 @@ int main(int argc,char *argv[])
 	free(D);
 	free(E);
 	free(F);
-	free(L);
-	free(U);
 
 	return(0);
 
@@ -279,24 +325,34 @@ void prodPromLU(param* parametro)
 
 
 	// Filas que suma el thread
-	int cant_filas = N/CANT_THREADS;	// Cant de filas que suma cada thread
+	int cant_filas = NT/CANT_THREADS;	// Cant de filas que suma cada thread
 	int fila_inicial = id*cant_filas;
 	int fila_final = fila_inicial + cant_filas -1;
 
-	total=0;
+	sumaL[id]=0;
+	sumaU[id]=0;
+
 
 	for(i=fila_inicial;i<=fila_final;i++)
 	{	// Recorre solo algunas filas
-		for(j=0;j<N;j++)
-		{	// Recorre todas las columnas
-			total=0;
-			for(k=0;k<N;k++)
-			{
-				total+=A[i*N+k]*B[k*N+j];	// total=A*B
-			}
-			C[i*N+j] = total;
+		for(j=0;j<NT;j++)
+		{	
+			sumaL[id]+=UT[i*NT+j];
+			sumaU[id]+=LT[i*NT+j];
 		}
 	}
+	pthread_barrier_wait(&barrera); //Espera a que todas terminen
+    if(id == 0)						//si es el hilo principal
+    {
+    	for (int i = 0; i < CANT_THREADS; ++i)
+    	{
+    		promL+=sumaL[i];
+    		promU+=sumaU[i];
+    	}
+    	promL/=CANT_THREADS;
+    	promU/=CANT_THREADS;
+    	prodLU=promU*promL;
+    }
 }
 
 
@@ -347,6 +403,11 @@ void imprimir_matriz (basetype * matriz,int N){
 		}
 		printf("\n");
 	}
+}
+
+void suma_matriz (basetype * m1, basetype * m2, basetype * res, int N)
+{
+	
 }
 
 double dwalltime(){

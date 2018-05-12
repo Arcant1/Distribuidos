@@ -39,6 +39,7 @@ basetype *L;
 basetype *U;
 basetype *C;
 int N;
+int NT;
 int CANT_THREADS;
 
 
@@ -71,8 +72,8 @@ int main(int argc,char *argv[])
 	{
 		for (int j = 0; j < NT; ++j)
 		{
-			U[i+j*(j+1)/2]=rand()%5;
-			L[i+N*j - i*(i+1)/2]=rand()%5;
+			U[i*N+j]=rand()%5;
+			L[i+N*j]=rand()%5;
 		}
 	}
 
@@ -82,7 +83,7 @@ int main(int argc,char *argv[])
 	printf("\n");
 	imprimir_superior(U,N);
 
-
+/*
 
 	
 	param parametros[CANT_THREADS];	// Arreglo de param (struct que contiene los datos para pasar a los threads)
@@ -119,7 +120,7 @@ int main(int argc,char *argv[])
 	//imprimir_matriz(C,N);
 	free(L);
 	free(U);
-	free(C);
+	free(C);*/
 
 
 }
