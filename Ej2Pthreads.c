@@ -55,6 +55,8 @@ pthread_barrier_t barrera; 		// Barrerra
 
 void *funcion_threads(void *arg);
 void multiplicacion(param *parametro);
+void promedioB(param* parametro);
+void prodPromLU(param* parametro);
 void imprimir_matriz (basetype * matriz,int N);
 double dwalltime();
 double tiempo_copia_total=0;
@@ -66,6 +68,7 @@ void verificar_resultado(basetype *C,basetype *C_secuencial,int N);
 
 basetype *C_secuencial;	// Matriz resultado
 #endif
+
 
 int main(int argc,char *argv[]){
 	int i;
@@ -80,6 +83,7 @@ int main(int argc,char *argv[]){
 
 	N = atoi(argv[1]);	// Dimensión de la matriz: N*N
 	CANT_THREADS = atoi(argv[2]);
+
 
 	printf("Dimensión de la matriz: %d*%d \n",N,N);
 
@@ -116,9 +120,9 @@ int main(int argc,char *argv[]){
 	pthread_t threads[CANT_THREADS];	// Arreglo de threads
 
 	if (pthread_barrier_init(&barrera,NULL,CANT_THREADS)!=0) {
-        	printf("Error creacion de barrera\n");
+		printf("Error creacion de barrera\n");
 		return 0;
-    	}
+	}
 
 	// Inicialización de parámetros
 	for (i=0;i<CANT_THREADS;i++){
@@ -127,19 +131,19 @@ int main(int argc,char *argv[]){
 	double tiempo_inicial=dwalltime();
 	// Creacion de los threads
 	for (i=0;i<CANT_THREADS;i++){
-    		if (pthread_create( &threads[i],NULL,funcion_threads,(void*)&parametros[i])!=0) {
-        		printf("Error creacion de thread\n");
+		if (pthread_create( &threads[i],NULL,funcion_threads,(void*)&parametros[i])!=0) {
+			printf("Error creacion de thread\n");
 			return 0;
-    		}
+		}
 	}
 
 	// Join de los threads
 	for(i = 0; i < CANT_THREADS; i++) {
-        	pthread_join(threads[i], NULL);
+		pthread_join(threads[i], NULL);
 
-    	}
-			tiempo_paral = dwalltime()-tiempo_inicial;
-    	printf("\nTiempo Total (pthreads) : %f\n\n",dwalltime()-tiempo_inicial);
+	}
+	tiempo_paral = dwalltime()-tiempo_inicial;
+	printf("\nTiempo Total (pthreads) : %f\n\n",dwalltime()-tiempo_inicial);
 
   #ifdef COMPARAR_SECUENCIAL
 	tiempo_inicial=dwalltime();
@@ -158,8 +162,8 @@ int main(int argc,char *argv[]){
 
 	// Libera memoria
 	free(A);
- 	free(B);
- 	free(C);
+	free(B);
+	free(C);
 
 	return(0);
 
@@ -209,14 +213,14 @@ void multiplicacion(param* parametro){
 				}
 				C[i*N+j] = total;
 			}
-     }
+		}
 
-}
+	}
 
 
 
-void suma(param* parametro){
-	//printf("Comienzo etapa 1\n");
+	void suma(param* parametro){
+	
 	int id = (*parametro).id;
 	basetype total;
 	int i,j,k;
@@ -235,8 +239,8 @@ void suma(param* parametro){
 			{	
 				total+=B[i*N + j];
 			}
-     }
-     sumaParcialB[id]=total;
+		}
+		sumaParcialB[id]=total;
      pthread_barrier_wait(&barrera); //Espera a que todas terminen
      if(id == 0)						//si es el hilo principal
      {
@@ -246,70 +250,70 @@ void suma(param* parametro){
      	}
      	promB /=CANT_THREADS;
      }
-}
+ }
 
 // --------------------------
 // -- FUNCIONES AUXILIARES //
 // --------------------------
 
-void imprimir_matriz (basetype * matriz,int N){
-	int i;
-	int j;
-	for (i=0;i<N;i++){
-		for (j = 0 ; j < N ; j++){
-			printf ("%.1f\t",matriz [ i * N + j ]);
-		}
-		printf("\n");
-	}
-}
+ void imprimir_matriz (basetype * matriz,int N){
+ 	int i;
+ 	int j;
+ 	for (i=0;i<N;i++){
+ 		for (j = 0 ; j < N ; j++){
+ 			printf ("%.1f\t",matriz [ i * N + j ]);
+ 		}
+ 		printf("\n");
+ 	}
+ }
 
-double dwalltime(){
-        double sec;
-        struct timeval tv;
+ double dwalltime(){
+ 	double sec;
+ 	struct timeval tv;
 
-        gettimeofday(&tv,NULL);
-        sec = tv.tv_sec + tv.tv_usec/1000000.0;
-        return sec;
-}
+ 	gettimeofday(&tv,NULL);
+ 	sec = tv.tv_sec + tv.tv_usec/1000000.0;
+ 	return sec;
+ }
 
 // ----------------------------
 // -- FUNCIONES SECUENCIALES //
 // ----------------------------
 
 #ifdef COMPARAR_SECUENCIAL
-void multiplicacion_secuencial(basetype *A,basetype *B,basetype *C,int N){
+ void multiplicacion_secuencial(basetype *A,basetype *B,basetype *C,int N){
 	//printf("Comienzo etapa 1\n");
 
-	basetype total;
-	int i,j,k;
+ 	basetype total;
+ 	int i,j,k;
 
 	// Multiplica A*B*D=C
-	for(i=0;i<N;i++){
-			for(j=0;j<N;j++){
-				total=0;
-				for(k=0;k<N;k++){
+ 	for(i=0;i<N;i++){
+ 		for(j=0;j<N;j++){
+ 			total=0;
+ 			for(k=0;k<N;k++){
 					total+=A[i*N+k]*B[k*N+j];	// total=A*B
 				}
 				C[i*N+j] = total;		// C=total
 			}
-     	}
+		}
 
-}
+	}
 
-void verificar_resultado(basetype *C,basetype *C_secuencial,int N){
-	int i,j;
-	int check = 1;
-	for(i=0;i<N;i++){
-		for(j=0;j<N;j++){
-			check=check&&(C[i*N+j]==C_secuencial[i*N+j]);
+	void verificar_resultado(basetype *C,basetype *C_secuencial,int N){
+		int i,j;
+		int check = 1;
+		for(i=0;i<N;i++){
+			for(j=0;j<N;j++){
+				check=check&&(C[i*N+j]==C_secuencial[i*N+j]);
+			}
+		}
+
+		if(check){
+			printf("Resultado correcto\n");
+		}
+		else{
+			printf("Resultado erroneo \n");
 		}
 	}
-
-	if(check){
-		printf("Resultado correcto\n");
-	}
-	else{
-		printf("Resultado erroneo \n");
-	}
-}
 #endif
