@@ -70,7 +70,8 @@ basetype *C_secuencial;	// Matriz resultado
 #endif
 
 
-int main(int argc,char *argv[]){
+int main(int argc,char *argv[])
+{
 	int i;
 	int j;
 
@@ -112,9 +113,29 @@ int main(int argc,char *argv[]){
 	for(i=0;i<N;i++){
 		for(j=0;j<N;j++){
 			A[i*N+j]=rand()%5;  	// Inicializa matriz A con random
-			//A[i*N+j]=1;  	// Inicializa matriz A con unos
 			B[i*N+j]=rand()%5; 	// Inicializa matriz B con random
-			//B[i*N+j]=1; 	// Inicializa matriz B con unos
+			C[i*N+j]=rand()%5; 	// Inicializa matriz B con random
+			D[i*N+j]=rand()%5; 	// Inicializa matriz B con random
+			E[i*N+j]=rand()%5; 	// Inicializa matriz B con random
+			F[i*N+j]=rand()%5; 	// Inicializa matriz B con random
+		}
+	}
+
+	//inicializo las matrices triangulares L y U
+	for (int i = 0; i < N; ++i)
+	{
+		for (int j = 0; j < N; ++j)
+		{
+			if(i>j)
+			{
+				U[i*N+j]=rand%5;
+				L[i*N+j]=0;	
+			}
+			else
+			{
+				L[i*N+j]=rand%5;
+				U[i*N+j]=0;	
+			}
 		}
 	}
 
@@ -143,23 +164,25 @@ int main(int argc,char *argv[]){
 	}
 
 	// Join de los threads
-	for(i = 0; i < CANT_THREADS; i++) {
+	for(i = 0; i < CANT_THREADS; i++) 
+	{
 		pthread_join(threads[i], NULL);
 
 	}
+
 	tiempo_paral = dwalltime()-tiempo_inicial;
 	printf("\nTiempo Total (pthreads) : %f\n\n",dwalltime()-tiempo_inicial);
 
-  #ifdef COMPARAR_SECUENCIAL
-	tiempo_inicial=dwalltime();
-	multiplicacion_secuencial(A,B,C_secuencial,N);	// C_secuencial = A*B
-	tiempo_sec = dwalltime()-tiempo_inicial;
-	printf("-- Fin de multiplicacion (secuencial) -->> \t Tiempo: %f \n", tiempo_sec);
+	#ifdef COMPARAR_SECUENCIAL
+		tiempo_inicial=dwalltime();
+		multiplicacion_secuencial(A,B,C_secuencial,N);	// C_secuencial = A*B
+		tiempo_sec = dwalltime()-tiempo_inicial;
+		printf("-- Fin de multiplicacion (secuencial) -->> \t Tiempo: %f \n", tiempo_sec);
 
-	speedup = tiempo_sec / tiempo_paral;
-	printf("-- Speedup conseguido: %f \n", speedup);
-	eficiencia = speedup / CANT_THREADS;
-	printf("-- Eficiencia: %f \n", eficiencia);
+		speedup = tiempo_sec / tiempo_paral;
+		printf("-- Speedup conseguido: %f \n", speedup);
+		eficiencia = speedup / CANT_THREADS;
+		printf("-- Eficiencia: %f \n", eficiencia);
 
 	free(C_secuencial);
 	#endif
@@ -169,6 +192,11 @@ int main(int argc,char *argv[]){
 	free(A);
 	free(B);
 	free(C);
+	free(D);
+	free(E);
+	free(F);
+	free(L);
+	free(U);
 
 	return(0);
 
