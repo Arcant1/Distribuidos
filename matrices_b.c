@@ -4,15 +4,13 @@
 
 /* Time in seconds from some point in the past */
 double dwalltime();
-void multiplicacion_secuencial(double *A, double *B, double *C, int N);
+
 
 int main(int argc,char*argv[]){
  double *A,*B,*C;
  int i,j,k,N;
  int check=1;
- double tiempoInicial;
- double tiempoParalelo;
- double tiempoSecuencial;
+ double timetick;
 
  //Controla los argumentos al programa
   if (argc < 3){
@@ -37,7 +35,7 @@ int main(int argc,char*argv[]){
    }
   }   
 
-  tiempoInicial = dwalltime();
+  timetick = dwalltime();
  //Realiza la multiplicacion
 # pragma omp parallel for private(i,j,k)
   for(i=0;i<N;i++){ 
@@ -48,8 +46,7 @@ int main(int argc,char*argv[]){
     }
    }
   }   
-  tiempoParalelo=dwalltime() - tiempoInicial;
-  printf("Tiempo en segundos (paralelo) %f \n", tiempoParalelo);
+  printf("Tiempo en segundos %f \n", dwalltime() - timetick);
 
  //Verifica el resultado
   for(i=0;i<N;i++){
@@ -63,17 +60,8 @@ int main(int argc,char*argv[]){
   }else{
    printf("Multiplicacion de matrices resultado erroneo\n");
   }
- tiempoInicial = dwalltime();
- multiplicacion_secuencial(A,B,C,N);
- tiempoSecuencial = dwalltime() - tiempoInicial;
- printf("Tiempo en segundos (Secuencial) %f \n", tiempoSecuencial);
- 
-double speedup = tiempoSecuencial / tiempoParalelo;
- printf("-- Speedup conseguido: %f \n", speedup);
- double eficiencia = speedup / numThreads;
- printf("-- Eficiencia: %f \n", eficiencia);
- 
-free(A);
+
+ free(A);
  free(B);
  free(C);
  return(0);
@@ -93,25 +81,6 @@ double dwalltime()
 	gettimeofday(&tv,NULL);
 	sec = tv.tv_sec + tv.tv_usec/1000000.0;
 	return sec;
-}
-
-void multiplicacion_secuencial(double *A,double *B,double *C,int N){
-	//printf("Comienzo etapa 1\n");
-
-	double total;
-	int i,j,k;
-
-	// Multiplica A*B*D=C
-	for(i=0;i<N;i++){
-			for(j=0;j<N;j++){
-				total=0;
-				for(k=0;k<N;k++){
-					total+=A[i*N+k]*B[k*N+j];	// total=A*B
-				}
-				C[i*N+j] = total;		// C=total
-			}
-     	}
-
 }
 
 
