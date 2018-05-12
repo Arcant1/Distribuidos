@@ -57,33 +57,22 @@ int main(int argc,char *argv[])
 
 
 	N = atoi(argv[1]);	// Dimensión de la matriz: N*N
+	NT = (N*(N+1))>>1;
+
 	CANT_THREADS = atoi(argv[2]);
-	L=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para L
-	U=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para U	
+	L=(basetype*)malloc(NT*sizeof(basetype));			// Reserva memoria para L
+	U=(basetype*)malloc(NT*sizeof(basetype));			// Reserva memoria para U	
 	C=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para C
 
 
 	printf("Dimensión de la matriz: %d*%d \n",N,N);
 
-	for(i=0;i<N;i++){
-		for(j=0;j<N;j++)
+	for (int i = 0; i < NT; ++i)
+	{
+		for (int j = 0; j < NT; ++j)
 		{
-			C[i*N+j]=0;	
-			if(i<j)
-			{
-				U[i*N+j]=rand()%9;
-				L[i*N+j]=0;	
-			}
-			else if(i>j)
-			{
-				L[i*N+j]=rand()%9;
-				U[i*N+j]=0;	
-			}
-			else
-			{
-				U[i*N+j]=rand()%9;
-				L[i*N+j]=rand()%9;
-			}
+			U[i+j*(j+1)/2]=rand()%5;
+			L[i+N*j - i*(i+1)/2]=rand()%5;
 		}
 	}
 
@@ -159,8 +148,11 @@ void imprimir_superior (basetype * matriz,int N){
 	int i;
 	int j;
 	for (i=0;i<N;i++){
-		for (j = 0 ; j < N ,i>=j; j++){
-			printf ("%.1f\t",matriz [ i + (j*(j+1)/2) ]);
+		for (j = 0 ; j < N; j++){
+			if(i>=j)
+				printf ("%.1f\t",matriz [ i + (j*(j+1)/2) ]);
+			else
+				printf ("0\t");
 		}
 		printf("\n");
 	}

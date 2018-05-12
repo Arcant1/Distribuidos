@@ -53,6 +53,7 @@ int cant_filas_x_thread;	// Cantidad de filas que procesa cada thread en cada it
 int pos_max_global;
 
 int N;
+int NT;
 int CANT_THREADS;
 
 double speedup;
@@ -100,6 +101,7 @@ int main(int argc,char *argv[])
 
 
 	N = atoi(argv[1]);	// Dimensión de la matriz: N*N
+	NT = (N*(N+1))>>1;
 	CANT_THREADS = atoi(argv[2]);
 
 
@@ -116,8 +118,10 @@ int main(int argc,char *argv[])
 	D=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para D
 	E=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para E	
 	F=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para F
-	L=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para L
-	U=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para U	
+
+	// -- caso especial de matrices triangulares
+	L=(basetype*)malloc(NT*sizeof(basetype));			// Reserva memoria para L
+	U=(basetype*)malloc(NT*sizeof(basetype));			// Reserva memoria para U	
 
 	#ifdef COMPARAR_SECUENCIAL
 	C_secuencial=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para C_SECUENCIAL
@@ -135,17 +139,17 @@ int main(int argc,char *argv[])
 			D[i*N+j]=rand()%5; 	// Inicializa matriz B con random
 			E[i*N+j]=rand()%5; 	// Inicializa matriz B con random
 			F[i*N+j]=rand()%5; 	// Inicializa matriz B con random
+		}
+	}
 
-			if(i>j)
-			{
-				U[i*N+j]=rand()%5;
-				L[i*N+j]=0;	
-			}
-			else
-			{
-				L[i*N+j]=rand()%5;
-				U[i*N+j]=0;	
-			}
+	// -- Inicializacion de matrices triangulares superior por columnas e inferior por filas
+
+	for (int i = 0; i < NT; ++i)
+	{
+		for (int j = 0; j < NT; ++j)
+		{
+			U[i+j*(j+1)/2]=rand()%5;
+			L[i+N*j - i*(i+1)/2]=rand()%5;
 		}
 	}
 
