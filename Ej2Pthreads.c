@@ -48,15 +48,19 @@ basetype promU=0;
 basetype prodLU;
 
 //-- matrices de resultados intermedios
-basetype *sumaParcialB;
-basetype *sumaL;
-basetype *sumaU;
+basetype * sumaParcialB;
+basetype * sumaL;
+basetype * sumaU;
 basetype * ULA;
 basetype * AC;
 basetype * bL;
 basetype * BE;
 basetype * bD;
 basetype * UF;
+basetype * ULLACbLBE;
+basetype * bDUF;
+basetype * bLBE;
+basetype * ulAAC;
 
 //--
 
@@ -83,6 +87,10 @@ pthread_barrier_t barrera; 		// Barrerra
 void *funcion_threads(void *arg);
 void multiplicacion(param *parametro);
 void promedioB(param* parametro);
+void prod_escalar (basetype * m1, basetype a, int dim, int lower, int upper);
+void suma_matriz (basetype * m1, basetype * m2, basetype * res, int dim, int lower, int upper);
+void multiplicacion(param* parametro, basetype * m1, basetype * m2, basetype m3, int dim);
+
 void prodPromLU(param* parametro);
 void imprimir_matriz (basetype * matriz,int N);
 void suma_matriz (basetype * m1, basetype * m2, basetype * res, int N);
@@ -146,6 +154,19 @@ int main(int argc,char *argv[])
 
 	LT=(basetype*)malloc(NT*sizeof(basetype));			// Reserva memoria para L transformada para ahorrar espacio
 	UT=(basetype*)malloc(NT*sizeof(basetype));			// Reserva memoria para U transformada para ahorrar espacio	
+
+
+	// -- inicialización de matrices de resultados intermedios
+	AC=(basetype*)malloc(sizeof(basetype)*N*N);;
+	ULA=(basetype*)malloc(sizeof(basetype)*N*N);
+	bL=(basetype*)malloc(sizeof(basetype)*N*N);
+	BE=(basetype*)malloc(sizeof(basetype)*N*N);
+	bD=(basetype*)malloc(sizeof(basetype)*N*N);
+	UF=(basetype*)malloc(sizeof(basetype)*N*N);
+	bDUF=(basetype*)malloc(sizeof(basetype)*N*N);
+	bLBE=(basetype*)malloc(sizeof(basetype)*N*N);
+	ulAAC=(basetype*)malloc(sizeof(basetype)*N*N);
+
 
 	#ifdef COMPARAR_SECUENCIAL
 	C_secuencial=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para C_SECUENCIAL
@@ -238,7 +259,7 @@ int main(int argc,char *argv[])
 	printf("\nTiempo Total (pthreads) : %f\n\n",dwalltime()-tiempo_inicial);
 
 	#ifdef COMPARAR_SECUENCIAL
-		tiempo_inicial=dwalltime();
+	tiempo_inicial=dwalltime();
 		multiplicacion_secuencial(A,B,C_secuencial,N);	// C_secuencial = A*B
 		tiempo_sec = dwalltime()-tiempo_inicial;
 		printf("-- Fin de multiplicacion (secuencial) -->> \t Tiempo: %f \n", tiempo_sec);
@@ -248,36 +269,38 @@ int main(int argc,char *argv[])
 		eficiencia = speedup / CANT_THREADS;
 		printf("-- Eficiencia: %f \n", eficiencia);
 
-	free(C_secuencial);
+		free(C_secuencial);
 	#endif
 
 
 	// Libera memoria
-	free(A);
-	free(B);
-	free(C);
-	free(D);
-	free(E);
-	free(F);
+		free(A);
+		free(B);
+		free(C);
+		free(D);
+		free(E);
+		free(F);
 
-	return(0);
+		return(0);
 
-}
+	}
 
 // ------------------------
 // -- FUNCIONES PTHREADS //
 // ------------------------
 
 
-void *funcion_threads(void *arg) {
-	param* parametro = (param*)arg;
-	double tiempo_inicial2;
+	void *funcion_threads(void *arg) {
+		param* parametro = (param*)arg;
+		double tiempo_inicial2;
 	//printf("Mi ID es: %d \n",(*parametro).id);
-	if ((*parametro).id==0){
-		tiempo_inicial2=dwalltime();
-	}
-	multiplicacion(parametro);
-	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+		if ((*parametro).id==0){
+			tiempo_inicial2=dwalltime();
+		}
+		AC = 
+		multiplicacion(parametro,A,C,AC,N);
+		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+
 	if ((*parametro).id==0){
 		printf("-- Fin de multiplicacion (pthread) -->> \t Tiempo: %f \n",dwalltime()-tiempo_inicial2);
 		//printf("Matriz A:\n");
@@ -285,7 +308,7 @@ void *funcion_threads(void *arg) {
 	pthread_exit(NULL);
 }
 
-void multiplicacion(param* parametro)
+void multiplicacion(param* parametro, basetype * m1, basetype * m2, basetype m3, int dim)
 {
 	//printf("Comienzo etapa 1\n");
 	int id = (*parametro).id;
@@ -294,7 +317,7 @@ void multiplicacion(param* parametro)
 
 
 	// Filas que multiplica el thread
-	int cant_filas = N/CANT_THREADS;	// Cant de filas que multiplica cada thread
+	int cant_filas = dim/CANT_THREADS;	// Cant de filas que multiplica cada thread
 	int fila_inicial = id*cant_filas;
 	int fila_final = fila_inicial + cant_filas -1;
 
@@ -303,14 +326,14 @@ void multiplicacion(param* parametro)
 	// Multiplica A*B=C
 	for(i=fila_inicial;i<=fila_final;i++)
 	{	// Recorre solo algunas filas
-		for(j=0;j<N;j++)
+		for(j=0;j<dim;j++)
 		{	// Recorre todas las columnas
 			total=0;
-			for(k=0;k<N;k++)
+			for(k=0;k<dim;k++)
 			{
-				total+=A[i*N+k]*B[k*N+j];	// total=A*B
+				total+=m1[i*dim+k]*m2[k*dim+j];	// total=A*B
 			}
-			C[i*N+j] = total;
+			m3[i*dim+j] = total;
 		}
 	}
 }
@@ -405,9 +428,26 @@ void imprimir_matriz (basetype * matriz,int N){
 	}
 }
 
-void suma_matriz (basetype * m1, basetype * m2, basetype * res, int N)
+void prod_escalar (basetype * m1, basetype a, int dim, int lower, int upper)
 {
-	
+	for (int i = lower; i < upper; ++i)
+	{
+		for (int j = 0; j < dim; ++j)
+		{
+			m1[i*dim+j]*=a;
+		}
+	}
+}
+
+void suma_matriz (basetype * m1, basetype * m2, basetype * res, int dim, int lower, int upper)
+{
+	for (int i = lower; i < upper; ++i)
+	{
+		for (int j = 0; j < dim; ++j)
+		{
+			res[i*dim+j]	=	m1[i*dim+j]	+	m2[i*dim+j];
+		}
+	}
 }
 
 double dwalltime(){
