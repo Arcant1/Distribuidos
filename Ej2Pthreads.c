@@ -95,9 +95,14 @@ int main(int argc,char *argv[]){
 	A=(basetype*)malloc(sizeof(basetype)*N*N);			// Reserva memoria para A
 	B=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para B
 	C=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para C
+	D=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para D
+	E=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para E	
+	F=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para F
+	L=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para L
+	U=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para U	
 
 	#ifdef COMPARAR_SECUENCIAL
-	C_secuencial=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para C
+	C_secuencial=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para C_SECUENCIAL
 	#endif
 
 
@@ -190,7 +195,8 @@ void *funcion_threads(void *arg) {
 	pthread_exit(NULL);
 }
 
-void multiplicacion(param* parametro){
+void multiplicacion(param* parametro)
+{
 	//printf("Comienzo etapa 1\n");
 	int id = (*parametro).id;
 	basetype total;
@@ -205,22 +211,53 @@ void multiplicacion(param* parametro){
 	//printf("ID: %d \t fila_inicial=%d \t fila_final=%d \n",id,fila_inicial,fila_final);
 
 	// Multiplica A*B=C
-	for(i=fila_inicial;i<=fila_final;i++){	// Recorre solo algunas filas
-			for(j=0;j<N;j++){	// Recorre todas las columnas
-				total=0;
-				for(k=0;k<N;k++){
-					total+=A[i*N+k]*B[k*N+j];	// total=A*B
-				}
-				C[i*N+j] = total;
+	for(i=fila_inicial;i<=fila_final;i++)
+	{	// Recorre solo algunas filas
+		for(j=0;j<N;j++)
+		{	// Recorre todas las columnas
+			total=0;
+			for(k=0;k<N;k++)
+			{
+				total+=A[i*N+k]*B[k*N+j];	// total=A*B
 			}
+			C[i*N+j] = total;
 		}
-
 	}
+}
 
 
 
-	void suma(param* parametro){
-	
+void prodPromLU(param* parametro)
+{
+	int id = (*parametro).id;
+	basetype total;
+	int i,j,k;
+
+
+	// Filas que suma el thread
+	int cant_filas = N/CANT_THREADS;	// Cant de filas que suma cada thread
+	int fila_inicial = id*cant_filas;
+	int fila_final = fila_inicial + cant_filas -1;
+
+	total=0;
+
+	for(i=fila_inicial;i<=fila_final;i++)
+	{	// Recorre solo algunas filas
+		for(j=0;j<N;j++)
+		{	// Recorre todas las columnas
+			total=0;
+			for(k=0;k<N;k++)
+			{
+				total+=A[i*N+k]*B[k*N+j];	// total=A*B
+			}
+			C[i*N+j] = total;
+		}
+	}
+}
+
+
+void promedioB(param* parametro)
+{
 	int id = (*parametro).id;
 	basetype total;
 	int i,j,k;
@@ -234,64 +271,65 @@ void multiplicacion(param* parametro){
 	//printf("ID: %d \t fila_inicial=%d \t fila_final=%d \n",id,fila_inicial,fila_final);
 	total=0;
 	// Multiplica A*B=C
-	for(i=fila_inicial;i<=fila_final;i++){	// Recorre solo algunas filas
-			for(j=0;j<N;j++) // Recorre todas las columnas
-			{	
-				total+=B[i*N + j];
-			}
+	for(i=fila_inicial;i<=fila_final;i++)
+	{										// Recorre solo algunas filas
+		for(j=0;j<N;j++)					// Recorre todas las columnas
+		{	
+			total+=B[i*N + j];
 		}
-		sumaParcialB[id]=total;
-     pthread_barrier_wait(&barrera); //Espera a que todas terminen
-     if(id == 0)						//si es el hilo principal
-     {
-     	for (int i = 0; i < CANT_THREADS; ++i)
-     	{
-     		promB+=sumaParcialB[i];
-     	}
-     	promB /=CANT_THREADS;
-     }
- }
+	}
+	sumaParcialB[id]=total;
+    pthread_barrier_wait(&barrera); //Espera a que todas terminen
+    if(id == 0)						//si es el hilo principal
+    {
+    	for (int i = 0; i < CANT_THREADS; ++i)
+    	{
+    		promB+=sumaParcialB[i];
+    	}
+    	promB /=CANT_THREADS;
+    }
+}
 
 // --------------------------
 // -- FUNCIONES AUXILIARES //
 // --------------------------
 
- void imprimir_matriz (basetype * matriz,int N){
- 	int i;
- 	int j;
- 	for (i=0;i<N;i++){
- 		for (j = 0 ; j < N ; j++){
- 			printf ("%.1f\t",matriz [ i * N + j ]);
- 		}
- 		printf("\n");
- 	}
- }
+void imprimir_matriz (basetype * matriz,int N){
+	int i;
+	int j;
+	for (i=0;i<N;i++){
+		for (j = 0 ; j < N ; j++){
+			printf ("%.1f\t",matriz [ i * N + j ]);
+		}
+		printf("\n");
+	}
+}
 
- double dwalltime(){
- 	double sec;
- 	struct timeval tv;
+double dwalltime(){
+	double sec;
+	struct timeval tv;
 
- 	gettimeofday(&tv,NULL);
- 	sec = tv.tv_sec + tv.tv_usec/1000000.0;
- 	return sec;
- }
+	gettimeofday(&tv,NULL);
+	sec = tv.tv_sec + tv.tv_usec/1000000.0;
+	return sec;
+}
 
 // ----------------------------
 // -- FUNCIONES SECUENCIALES //
 // ----------------------------
 
 #ifdef COMPARAR_SECUENCIAL
- void multiplicacion_secuencial(basetype *A,basetype *B,basetype *C,int N){
+void multiplicacion_secuencial(basetype *A,basetype *B,basetype *C,int N){
 	//printf("Comienzo etapa 1\n");
 
- 	basetype total;
- 	int i,j,k;
+	basetype total;
+	int i,j,k;
 
 	// Multiplica A*B*D=C
- 	for(i=0;i<N;i++){
- 		for(j=0;j<N;j++){
- 			total=0;
- 			for(k=0;k<N;k++){
+	for(i=0;i<N;i++){
+		for(j=0;j<N;j++){
+			total=0;
+			for(k=0;k<N;k++){
 					total+=A[i*N+k]*B[k*N+j];	// total=A*B
 				}
 				C[i*N+j] = total;		// C=total
