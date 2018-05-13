@@ -85,15 +85,15 @@ pthread_barrier_t barrera; 		// Barrerra
 // -- Definición de funciones --
 
 void *funcion_threads(void *arg);
-void multiplicacion(param *parametro);
 void promedioB(param* parametro);
-void prod_escalar (basetype * m1, basetype a, int dim, int lower, int upper);
-void suma_matriz (basetype * m1, basetype * m2, basetype * res, int dim, int lower, int upper);
-void multiplicacion(param* parametro, basetype * m1, basetype * m2, basetype m3, int dim);
+void prod_escalar 				(param * parametro, basetype * m1, basetype a, basetype * m2);
+void suma_matriz 				(param * parametro, basetype * m1, basetype * m2, basetype * res);
+void multiplicacion 			(param * parametro, basetype * m1, basetype * m2, basetype * m3, int dim);
+void multiplicacionXTriangularU	(param * parametro, basetype * m1, basetype * m2, basetype * m3, int dim);
+void multiplicacionXTriangularL	(param * parametro, basetype * m1, basetype * m2, basetype * m3, int dim);
 
 void prodPromLU(param* parametro);
 void imprimir_matriz (basetype * matriz,int N);
-void suma_matriz (basetype * m1, basetype * m2, basetype * res, int N);
 double dwalltime();
 
 
@@ -290,16 +290,28 @@ int main(int argc,char *argv[])
 // ------------------------
 
 
-	void *funcion_threads(void *arg) {
-		param* parametro = (param*)arg;
-		double tiempo_inicial2;
-	//printf("Mi ID es: %d \n",(*parametro).id);
-		if ((*parametro).id==0){
-			tiempo_inicial2=dwalltime();
-		}
-		AC = 
-		multiplicacion(parametro,A,C,AC,N);
-		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+void *funcion_threads(void *arg) {
+	param* parametro = (param*)arg;
+	double tiempo_inicial2;
+//printf("Mi ID es: %d \n",(*parametro).id);
+	if ((*parametro).id==0){
+		tiempo_inicial2=dwalltime();
+	}
+
+	multiplicacion(parametro,A,C,AC,N);
+	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+
+	prodPromLU(parametro);
+	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+
+
+	prod_escalar(parametro,A,prodLU,ULA);
+	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+
+	multiplicacion(parametro,ULA,AC,ulAAC,N);
+	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+
+		
 
 	if ((*parametro).id==0){
 		printf("-- Fin de multiplicacion (pthread) -->> \t Tiempo: %f \n",dwalltime()-tiempo_inicial2);
@@ -308,9 +320,84 @@ int main(int argc,char *argv[])
 	pthread_exit(NULL);
 }
 
-void multiplicacion(param* parametro, basetype * m1, basetype * m2, basetype m3, int dim)
+/*
+*
+*	m2 es triangular superior
+*/
+void multiplicacionXTriangularU(param* parametro, basetype * m1, basetype * m2, basetype *m3, int dim)
 {
-	//printf("Comienzo etapa 1\n");
+	int id = (*parametro).id;
+	basetype total;
+	basetype aux;
+	int i,j,k;
+
+
+	// Filas que multiplica el thread
+	int cant_filas = dim/CANT_THREADS;	// Cant de filas que multiplica cada thread
+	int fila_inicial = id*cant_filas;
+	int fila_final = fila_inicial + cant_filas -1;
+
+
+	for(i=fila_inicial;i<=fila_final;i++)
+	{	// Recorre solo algunas filas
+		for(j=0;j<dim;j++)
+		{	// Recorre todas las columnas
+
+			total=0;
+			for(k=0;k<dim;k++)
+			{
+				if(i>=j)
+				{
+					aux=m2[i*NT + j - i*(i+1)/2];
+				}
+				else aux = 0;
+				total+=m1[i*dim+k]*aux;	
+			}
+			m3[i*dim+j] = total;
+		}
+	}
+}
+
+/*
+*
+*	m2 es triangular superior
+*/
+void multiplicacionXTriangularL(param* parametro, basetype * m1, basetype * m2, basetype *m3, int dim)
+{
+	int id = (*parametro).id;
+	basetype total;
+	basetype aux;
+	int i,j,k;
+
+
+	// Filas que multiplica el thread
+	int cant_filas = dim/CANT_THREADS;	// Cant de filas que multiplica cada thread
+	int fila_inicial = id*cant_filas;
+	int fila_final = fila_inicial + cant_filas -1;
+
+
+	for(i=fila_inicial;i<=fila_final;i++)
+	{	// Recorre solo algunas filas
+		for(j=0;j<dim;j++)
+		{	// Recorre todas las columnas
+
+			total=0;
+			for(k=0;k<dim;k++)
+			{
+				if(i<=j)
+				{
+					aux=m2[i+j*NT - i*(i+1)/2];
+				}
+				else aux = 0;
+				total+=m1[i*dim+k]*aux;	
+			}
+			m3[i*dim+j] = total;
+		}
+	}
+}
+
+void multiplicacion(param* parametro, basetype * m1, basetype * m2, basetype * m3, int dim)
+{
 	int id = (*parametro).id;
 	basetype total;
 	int i,j,k;
@@ -428,24 +515,34 @@ void imprimir_matriz (basetype * matriz,int N){
 	}
 }
 
-void prod_escalar (basetype * m1, basetype a, int dim, int lower, int upper)
+void prod_escalar (param * parametro, basetype * m1, basetype a, basetype * m2)
 {
-	for (int i = lower; i < upper; ++i)
+	int id = (*parametro).id;
+	int cant_filas = N/CANT_THREADS;	// Cant de filas que multiplica cada thread
+	int fila_inicial = id*cant_filas;
+	int fila_final = fila_inicial + cant_filas -1;
+
+	for (int i = fila_inicial; i < fila_final; ++i)
 	{
-		for (int j = 0; j < dim; ++j)
+		for (int j = 0; j < N; ++j)
 		{
-			m1[i*dim+j]*=a;
+			m2[i*N+j]=m1[i*N+j]*a;
 		}
 	}
 }
 
-void suma_matriz (basetype * m1, basetype * m2, basetype * res, int dim, int lower, int upper)
+void suma_matriz (param * parametro, basetype * m1, basetype * m2, basetype * res)
 {
-	for (int i = lower; i < upper; ++i)
+	int id = (*parametro).id;
+	int cant_filas = N/CANT_THREADS;	// Cant de filas que multiplica cada thread
+	int fila_inicial = id*cant_filas;
+	int fila_final = fila_inicial + cant_filas -1;
+
+	for (int i = fila_inicial; i < fila_final; ++i)
 	{
-		for (int j = 0; j < dim; ++j)
+		for (int j = 0; j < N; ++j)
 		{
-			res[i*dim+j]	=	m1[i*dim+j]	+	m2[i*dim+j];
+			res[i*N+j]	=	m1[i*N+j]	+	m2[i*N+j];
 		}
 	}
 }
