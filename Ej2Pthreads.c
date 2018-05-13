@@ -100,20 +100,18 @@ double dwalltime();
 
 // -- funciones secuenciales
 
-void multiplicacionXTriangularLSECUENCIAL(basetype * m1, basetype * m2, basetype *m3, int dim);
-void multiplicacionXTriangularUSECUENCIAL(basetype * m1, basetype * m2, basetype *m3, int dim)
-void multiplicacionSECUENCIAL 			(basetype * m1, basetype * m2, basetype *m3, int dim);
-void promedioBSECUENCIAL();
-void prod_escalarSECUENCIAL				(basetype * m1, basetype a, basetype * m2);
-void suma_matrizSECUENCIAL 				(param * parametro, basetype * m1, basetype * m2, basetype * res);
-
 
 //-- caca
-double tiempo_copia_total=0;
+double tiempo_copia_total;
 
 #ifdef COMPARAR_SECUENCIAL
 void multiplicacion_secuencial(basetype *A,basetype *B,basetype *C_secuencial,int N);
-
+void multiplicacionXTriangularLSECUENCIAL	(basetype * m1, basetype * m2, basetype *m3, int dim);
+void multiplicacionXTriangularUSECUENCIAL	(basetype * m1, basetype * m2, basetype *m3, int dim);
+void multiplicacionSECUENCIAL 				(basetype * m1, basetype * m2, basetype *m3, int dim);
+void promedioBSECUENCIAL				();
+void prod_escalarSECUENCIAL				(basetype * m1, basetype a, basetype * m2);
+void suma_matrizSECUENCIAL 				(basetype * m1, basetype * m2, basetype * res);
 void verificar_resultado(basetype *C,basetype *C_secuencial,int N);
 
 basetype *C_secuencial;	// Matriz resultado
@@ -279,7 +277,7 @@ int main(int argc,char *argv[])
 	printf("\nTiempo Total (pthreads) : %f\n\n",dwalltime()-tiempo_inicial);
 
 	#ifdef COMPARAR_SECUENCIAL
-	tiempo_inicial=dwalltime();
+		tiempo_inicial=dwalltime();
 		multiplicacion_secuencial(A,B,C_secuencial,N);	// C_secuencial = A*B
 		tiempo_sec = dwalltime()-tiempo_inicial;
 		printf("-- Fin de multiplicacion (secuencial) -->> \t Tiempo: %f \n", tiempo_sec);
@@ -294,42 +292,41 @@ int main(int argc,char *argv[])
 
 
 	// Libera memoria
-		free(A);
-		free(B);
-		free(C);
-		free(D);
-		free(E);
-		free(F);
-		free(AC);
-		free(ULA);
-		free(ulAAC);
-		free(BE);
-		free(LT);
-		free(UT);
-		free(bLBE);
-		free(ULLACbLBE);
-		free(bDUF);
-		free(UF);
-		free(bD);
+	free(A);
+	free(B);
+	free(C);
+	free(D);
+	free(E);
+	free(F);
+	free(AC);
+	free(ULA);
+	free(ulAAC);
+	free(BE);
+	free(LT);
+	free(UT);
+	free(bLBE);
+	free(ULLACbLBE);
+	free(bDUF);
+	free(UF);
+	free(bD);
+	return(0);
+}
 
-		return(0);
-
-	}
 
 // ------------------------
 // -- FUNCIONES PTHREADS //
 // ------------------------
 
 
-void *funcion_threads(void *arg) {
-	param* parametro = (param*)arg;
-	double tiempo_inicial2;
+	void *funcion_threads(void *arg) {
+		param* parametro = (param*)arg;
+		double tiempo_inicial2;
 //printf("Mi ID es: %d \n",(*parametro).id);
-	if ((*parametro).id==0){
-		tiempo_inicial2=dwalltime();
-	}
+		if ((*parametro).id==0){
+			tiempo_inicial2=dwalltime();
+		}
 
-	multiplicacion(parametro,A,C,AC,N);
+		multiplicacion(parametro,A,C,AC,N);
 	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
 	prodPromLU(parametro);
@@ -394,13 +391,13 @@ void multiplicacionXTriangularU(param* parametro, basetype * m1, basetype * m2, 
 	int fila_final = fila_inicial + cant_filas -1;
 
 
-	for(i=fila_inicial;i<=fila_final;i++)
+	for(int i=fila_inicial;i<=fila_final;i++)
 	{	// Recorre solo algunas filas
-		for(j=0;j<dim;j++)
+		for(int j=0;j<dim;j++)
 		{	// Recorre todas las columnas
 
 			total=0;
-			for(k=0;k<dim;k++)
+			for(int k=0;k<dim;k++)
 			{
 				if(i>=j)
 				{
@@ -414,15 +411,17 @@ void multiplicacionXTriangularU(param* parametro, basetype * m1, basetype * m2, 
 	}
 }
 
-void multiplicacionXTriangularUSECUENCIAL(param* parametro, basetype * m1, basetype * m2, basetype *m3, int dim)
+void multiplicacionXTriangularUSECUENCIAL(basetype * m1, basetype * m2, basetype *m3, int dim)
 {
-	for(i=0;i<dim;i++)
+	basetype aux;
+	basetype total;
+	for(int i=0;i<dim;i++)
 	{	// Recorre solo algunas filas
-		for(j=0;j<dim;j++)
+		for(int j=0;j<dim;j++)
 		{	// Recorre todas las columnas
 
 			total=0;
-			for(k=0;k<dim;k++)
+			for(int k=0;k<dim;k++)
 			{
 				if(i>=j)
 				{
@@ -437,15 +436,17 @@ void multiplicacionXTriangularUSECUENCIAL(param* parametro, basetype * m1, baset
 }
 
 
-void multiplicacionXTriangularLSECUENCIAL(param* parametro, basetype * m1, basetype * m2, basetype *m3, int dim)
+void multiplicacionXTriangularLSECUENCIAL( basetype * m1, basetype * m2, basetype *m3, int dim)
 {
-	for(i=0;i<dim;i++)
+	basetype total;
+	basetype aux;
+	for(int i=0;i<dim;i++)
 	{	// Recorre solo algunas filas
-		for(j=0;j<dim;j++)
+		for(int j=0;j<dim;j++)
 		{	// Recorre todas las columnas
 
 			total=0;
-			for(k=0;k<dim;k++)
+			for(int k=0;k<dim;k++)
 			{
 				if(i>=j)
 				{
@@ -477,13 +478,13 @@ void multiplicacionXTriangularL(param* parametro, basetype * m1, basetype * m2, 
 	int fila_final = fila_inicial + cant_filas -1;
 
 
-	for(i=fila_inicial;i<=fila_final;i++)
+	for(int i=fila_inicial;i<=fila_final;i++)
 	{	// Recorre solo algunas filas
-		for(j=0;j<dim;j++)
+		for(int j=0;j<dim;j++)
 		{	// Recorre todas las columnas
 
 			total=0;
-			for(k=0;k<dim;k++)
+			for(int k=0;k<dim;k++)
 			{
 				if(i<=j)
 				{
@@ -565,7 +566,24 @@ void prodPromLU(param* parametro)
     	prodLU=promU*promL;
     }
 }
+basetype prodLUSEC;
+basetype sumaLSEC,sumaUSEC;
+void prodPromLUSECUENCIAL()
+{
+	sumaLSEC=0;
+	sumaUSEC=0;
+	for(int i=0;i<=NT;i++)
+	{	// Recorre solo algunas filas
+		for(int j=0;j<NT;j++)
+		{	
+			sumaLSEC+=UT[i*NT+j];
+			sumaUSEC+=LT[i*NT+j];
+		}
+	}
+	
+	prodLUSEC=promU*promL;
 
+}
 
 void promedioB(param* parametro)
 {
@@ -597,8 +615,25 @@ void promedioB(param* parametro)
     	{
     		promB+=sumaParcialB[i];
     	}
-    	promB /=CANT_THREADS;
+    	promB /=(N*N);
     }
+}
+
+void promedioBSECUENCIAL()
+{
+	
+	basetype total=0;
+	// Multiplica A*B=C
+	for(int i=0;i<=N;i++)
+	{										// Recorre solo algunas filas
+		for(int j=0;j<N;j++)					// Recorre todas las columnas
+		{	
+			total+=B[i*N + j];
+		}
+	}
+	
+	promB =total/(N*N);
+
 }
 
 // --------------------------
@@ -606,10 +641,9 @@ void promedioB(param* parametro)
 // --------------------------
 
 void imprimir_matriz (basetype * matriz,int N){
-	int i;
-	int j;
-	for (i=0;i<N;i++){
-		for (j = 0 ; j < N ; j++){
+	
+	for (int i=0;i<N;i++){
+		for (int j = 0 ; j < N ; j++){
 			printf ("%.1f\t",matriz [ i * N + j ]);
 		}
 		printf("\n");
@@ -632,6 +666,19 @@ void prod_escalar (param * parametro, basetype * m1, basetype a, basetype * m2)
 	}
 }
 
+void prod_escalarSECUENCIAL ( basetype * m1, basetype a, basetype * m2)
+{
+	
+
+	for (int i = 0; i < N; ++i)
+	{
+		for (int j = 0; j < N; ++j)
+		{
+			m2[i*N+j]=m1[i*N+j]*a;
+		}
+	}
+}
+
 void suma_matriz (param * parametro, basetype * m1, basetype * m2, basetype * res)
 {
 	int id = (*parametro).id;
@@ -640,6 +687,16 @@ void suma_matriz (param * parametro, basetype * m1, basetype * m2, basetype * re
 	int fila_final = fila_inicial + cant_filas -1;
 
 	for (int i = fila_inicial; i < fila_final; ++i)
+	{
+		for (int j = 0; j < N; ++j)
+		{
+			res[i*N+j]	=	m1[i*N+j]	+	m2[i*N+j];		
+		}
+	}
+}			
+void suma_matrizSECUENCIAL ( basetype * m1, basetype * m2, basetype * res)
+{
+	for (int i = 0; i < N; ++i)
 	{
 		for (int j = 0; j < N; ++j)
 		{
