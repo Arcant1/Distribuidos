@@ -105,14 +105,15 @@ double dwalltime();
 double tiempo_copia_total;
 
 #ifdef COMPARAR_SECUENCIAL
-void multiplicacion_secuencial(basetype *A,basetype *B,basetype *C_secuencial,int N);
+void multiplicacion_secuencial				(basetype *A,basetype *B,basetype *C,int N);
 void multiplicacionXTriangularLSECUENCIAL	(basetype * m1, basetype * m2, basetype *m3, int dim);
 void multiplicacionXTriangularUSECUENCIAL	(basetype * m1, basetype * m2, basetype *m3, int dim);
-void multiplicacionSECUENCIAL 				(basetype * m1, basetype * m2, basetype *m3, int dim);
-void promedioBSECUENCIAL				();
-void prod_escalarSECUENCIAL				(basetype * m1, basetype a, basetype * m2);
-void suma_matrizSECUENCIAL 				(basetype * m1, basetype * m2, basetype * res);
-void verificar_resultado(basetype *C,basetype *C_secuencial,int N);
+void promedioBSECUENCIAL					();
+void prod_escalarSECUENCIAL					(basetype * m1, basetype a, basetype * m2);
+void prodPromLUSECUENCIAL					();
+
+void suma_matrizSECUENCIAL 					(basetype * m1, basetype * m2, basetype * res);
+void verificar_resultado					(basetype *C,basetype *C_secuencial,int N);
 
 basetype *C_secuencial;	// Matriz resultado
 #endif
@@ -278,7 +279,20 @@ int main(int argc,char *argv[])
 
 	#ifdef COMPARAR_SECUENCIAL
 		tiempo_inicial=dwalltime();
-		multiplicacion_secuencial(A,B,C_secuencial,N);	// C_secuencial = A*B
+		multiplicacion_secuencial(A,C,AC,N);
+		prodPromLUSECUENCIAL();
+		prod_escalarSECUENCIAL(A,prodLU,ULA);
+		multiplicacion_secuencial(ULA,AC,ulAAC,N);
+		promedioBSECUENCIAL();
+		multiplicacion_secuencial(B,E,BE,N);
+		multiplicacionXTriangularLSECUENCIAL(BE,LT,bLBE,N);
+		prod_escalarSECUENCIAL(bLBE,promB,bLBE);
+		prod_escalarSECUENCIAL(D,promB,bD);
+		multiplicacionXTriangularUSECUENCIAL(F,UT,UF,N);
+		multiplicacion_secuencial(bD,UF,bDUF,N);
+		suma_matrizSECUENCIAL(ulAAC,bLBE,ULLACbLBE);
+		suma_matrizSECUENCIAL(ULLACbLBE,bDUF,resultado);
+
 		tiempo_sec = dwalltime()-tiempo_inicial;
 		printf("-- Fin de multiplicacion (secuencial) -->> \t Tiempo: %f \n", tiempo_sec);
 
@@ -289,7 +303,6 @@ int main(int argc,char *argv[])
 
 		free(C_secuencial);
 	#endif
-
 
 	// Libera memoria
 	free(A);
@@ -309,61 +322,92 @@ int main(int argc,char *argv[])
 	free(bDUF);
 	free(UF);
 	free(bD);
+	free(resultado);
 	return(0);
 }
-
-
 // ------------------------
 // -- FUNCIONES PTHREADS //
 // ------------------------
 
-
 	void *funcion_threads(void *arg) {
 		param* parametro = (param*)arg;
 		double tiempo_inicial2;
+		int id = (*parametro).id;
+
 //printf("Mi ID es: %d \n",(*parametro).id);
 		if ((*parametro).id==0){
 			tiempo_inicial2=dwalltime();
 		}
 
-		multiplicacion(parametro,A,C,AC,N);
+	multiplicacion(parametro,A,C,AC,N);
 	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+
+	if(id==0) printf("etapa 0\n");
 
 	prodPromLU(parametro);
 	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
+	if(id==0) printf("etapa 1\n");
+
+
 	prod_escalar(parametro,A,prodLU,ULA);
 	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+
+	if(id==0) printf("etapa 2\n");
+
 
 	multiplicacion(parametro,ULA,AC,ulAAC,N);
 	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
+	if(id==0) printf("etapa 3\n");
+
+
 	promedioB(parametro);
 	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+
+	if(id==0) printf("etapa 4\n");
+
 
 	multiplicacion(parametro,B,E,BE,N);	
 	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
+	if(id==0) printf("etapa 5\n");
+
+
 	multiplicacionXTriangularL(parametro,BE,LT,bLBE,N);
 	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+
+	if(id==0) printf("etapa 6\n");
 
 	prod_escalar(parametro,bLBE,promB,bLBE);
 	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
+	if(id==0) printf("etapa 7\n");
+
 	prod_escalar(parametro,D,promB,bD);
 	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+
+	if(id==0) printf("etapa 8\n");
 
 	multiplicacionXTriangularU(parametro,F,UT,UF,N);
 	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
+	if(id==0) printf("etapa 9\n");
+
 	multiplicacion(parametro,bD,UF,bDUF,N);
 	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+
+	if(id==0) printf("etapa 10\n");
 
 	suma_matriz(parametro,ulAAC,bLBE,ULLACbLBE);
 	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
+	if(id==0) printf("etapa 11\n");
+
 	suma_matriz(parametro,ULLACbLBE,bDUF,resultado);
 	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+
+	if(id==0) printf("etapa 12\n");
 
 
 	if ((*parametro).id==0){
@@ -533,7 +577,7 @@ void prodPromLU(param* parametro)
 {
 	int id = (*parametro).id;
 	basetype total;
-	int i,j,k;
+	int i;
 
 
 	// Filas que suma el thread
@@ -547,11 +591,10 @@ void prodPromLU(param* parametro)
 
 	for(i=fila_inicial;i<=fila_final;i++)
 	{	// Recorre solo algunas filas
-		for(j=0;j<NT;j++)
-		{	
-			sumaL[id]+=UT[i*NT+j];
-			sumaU[id]+=LT[i*NT+j];
-		}
+		
+		sumaL[id]+=UT[i];
+		sumaU[id]+=LT[i];
+		
 	}
 	pthread_barrier_wait(&barrera); //Espera a que todas terminen
     if(id == 0)						//si es el hilo principal
@@ -573,12 +616,11 @@ void prodPromLUSECUENCIAL()
 	sumaLSEC=0;
 	sumaUSEC=0;
 	for(int i=0;i<=NT;i++)
-	{	// Recorre solo algunas filas
-		for(int j=0;j<NT;j++)
-		{	
-			sumaLSEC+=UT[i*NT+j];
-			sumaUSEC+=LT[i*NT+j];
-		}
+	{	
+		
+			sumaLSEC+=UT[i];
+			sumaUSEC+=LT[i];
+		
 	}
 	
 	prodLUSEC=promU*promL;
@@ -728,31 +770,33 @@ void multiplicacion_secuencial(basetype *A,basetype *B,basetype *C,int N){
 
 	// Multiplica A*B*D=C
 	for(i=0;i<N;i++){
-		for(j=0;j<N;j++){
+		for(j=0;j<N;j++)
+		{
 			total=0;
-			for(k=0;k<N;k++){
-					total+=A[i*N+k]*B[k*N+j];	// total=A*B
-				}
-				C[i*N+j] = total;		// C=total
+			for(k=0;k<N;k++)
+			{
+				total+=A[i*N+k]*B[k*N+j];	// total=A*B
 			}
-		}
-
-	}
-
-	void verificar_resultado(basetype *C,basetype *C_secuencial,int N){
-		int i,j;
-		int check = 1;
-		for(i=0;i<N;i++){
-			for(j=0;j<N;j++){
-				check=check&&(C[i*N+j]==C_secuencial[i*N+j]);
-			}
-		}
-
-		if(check){
-			printf("Resultado correcto\n");
-		}
-		else{
-			printf("Resultado erroneo \n");
+			C[i*N+j] = total;		// C=total
 		}
 	}
+}
+
+void verificar_resultado(basetype *C,basetype *C_secuencial,int N){
+	int i,j;
+	int check = 1;
+	for(i=0;i<N;i++){
+		for(j=0;j<N;j++){
+			check=check&&(C[i*N+j]==C_secuencial[i*N+j]);
+		}
+	}
+		if(check)
+	{
+		printf("Resultado correcto\n");
+	}
+	else
+	{
+		printf("Resultado erroneo \n");
+	}
+}
 #endif
