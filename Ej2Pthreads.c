@@ -153,7 +153,6 @@ int main(int argc,char *argv[])
 	UT=(basetype*)malloc(NT*NT*sizeof(basetype)); // Reserva memoria para U transformada para ahorrar espacio	
 
 	//Inicialización de matrices de resultados intermedios
-	AC= (basetype*)malloc(sizeof(basetype)*N*N);
 	ULA= (basetype*)malloc(sizeof(basetype)*N*N);
 	bL= (basetype*)malloc(sizeof(basetype)*N*N);
 	BE= (basetype*)malloc(sizeof(basetype)*N*N);
@@ -321,42 +320,75 @@ int main(int argc,char *argv[])
 
 		if ((*parametro).id==0){
 			tiempo_inicial2=dwalltime();
+			AC= (basetype*)malloc(sizeof(basetype)*N*N);
 		}
-
+		
+		pthread_barrier_wait(&barrera);
 		multiplicacion(parametro,A,C,AC,N);
 		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
-		if(id==0) printf("etapa 0\n");
 
+
+		if(id==0){
+			free(C);
+			printf("etapa 0\n");
+		}
+
+		pthread_barrier_wait(&barrera);
 		prodPromLU(parametro);
 		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
-		if(id==0) printf("etapa 1\n");
+		if(id==0){
+			ULA= (basetype*)malloc(sizeof(basetype)*N*N);			
+			printf("etapa 1\n");
+		}
 
+		pthread_barrier_wait(&barrera);
 		prod_escalar(parametro,A,prodLU,ULA);
 		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
-		if(id==0) printf("etapa 2\n");
+		if(id==0) {
+			ulAAC= (basetype*)malloc(sizeof(basetype)*N*N);			
+			printf("etapa 2\n");
+		}
 
+		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 		multiplicacion(parametro,ULA,AC,ulAAC,N);
 		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
-		if(id==0) printf("etapa 3\n");
+		if(id==0) {
+			free(ULA);
+			free(AC);
+			printf("etapa 3\n");
+		}
 
+		pthread_barrier_wait(&barrera);
 		promedioB(parametro);
 		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
-		if(id==0) printf("etapa 4\n");
+		if(id==0) {
+			BE = (basetype*)malloc(sizeof(basetype)*N*N);			
+			printf("etapa 4\n");
+		}
 
+		pthread_barrier_wait(&barrera);
 		multiplicacion(parametro,B,E,BE,N);	
 		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
-		if(id==0) printf("etapa 5\n");
+		if(id==0) {
+			printf("etapa 5\n");
+			bLBE = (basetype*)malloc(sizeof(basetype)*N*N);			
 
-		//multiplicacionXTriangularL(parametro,BE,LT,bLBE,N);
+		}
+
+		pthread_barrier_wait(&barrera);
+		multiplicacionXTriangularL(parametro,BE,LT,bLBE,N);
 		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
-		if(id==0) printf("etapa 6\n");
+		if(id==0) {
+			printf("etapa 6\n");
+			free(BE);
+		}
 
 		prod_escalar(parametro,bLBE,promB,bLBE);
 		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
