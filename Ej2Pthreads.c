@@ -447,7 +447,7 @@ void multiplicacionXTriangularUSECUENCIAL(basetype * m1, basetype * m2, basetype
 			{
 				if(i>=j)
 				{
-					aux=m2[i*NT + j - i*(i+1)/2];
+					aux=m2[j + 	k*dim - j*(j+1)/2];
 				}
 				else aux = 0;
 				total+=m1[i*dim+k]*aux;	
@@ -472,7 +472,7 @@ void multiplicacionXTriangularLSECUENCIAL( basetype * m1, basetype * m2, basetyp
 			{
 				if(i>=j)
 				{
-					aux=m2[i*NT + j - i*(i+1)/2];
+					aux=m2[j + 	k*dim - j*(j+1)/2];
 				}
 				else aux = 0;
 				total+=m1[i*dim+k]*aux;	
