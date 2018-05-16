@@ -96,8 +96,6 @@ double dwalltime ();
 
 //Funciones secuenciales
 
-
-//-- 
 double tiempo_copia_total;
 
 #ifdef COMPARAR_SECUENCIAL
