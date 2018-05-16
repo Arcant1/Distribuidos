@@ -27,8 +27,7 @@ typedef struct param
 	int id;
 } param;
 
-
-// -- Variables globales --
+//Variables globales
 
 // Matrices
 basetype *A;
@@ -47,7 +46,7 @@ basetype promL=0;
 basetype promU=0;
 basetype prodLU;
 
-//-- matrices de resultados intermedios
+//Matrices de resultados intermedios
 basetype * sumaParcialB;
 basetype * sumaL;
 basetype * sumaU;
@@ -62,9 +61,6 @@ basetype * bDUF;
 basetype * bLBE;
 basetype * ulAAC;
 basetype * resultado;
-
-//--
-
 
 int cant_filas_restantes;	// Cantidad de filas que restan ordenar
 int cant_filas_x_thread;	// Cantidad de filas que procesa cada thread en cada iteración (va disminuyendo)
@@ -83,41 +79,38 @@ basetype factor_global;
 
 pthread_barrier_t barrera; 		// Barrera
 
-// -- Definición de funciones concurrentes --
+//Definición de funciones concurrentes
 
-void *funcion_threads(void *arg);
-void promedioB(param* parametro);
-void prod_escalar 				(param * parametro, basetype * m1, basetype a, basetype * m2);
-void suma_matriz 				(param * parametro, basetype * m1, basetype * m2, basetype * res);
-void multiplicacion 			(param * parametro, basetype * m1, basetype * m2, basetype * m3, int dim);
-void multiplicacionXTriangularU	(param * parametro, basetype * m1, basetype * m2, basetype * m3, int dim);
-void multiplicacionXTriangularL	(param * parametro, basetype * m1, basetype * m2, basetype * m3, int dim);
+void *funcion_threads (void *arg);
+void promedioB (param* parametro);
+void prod_escalar (param * parametro, basetype * m1, basetype a, basetype * m2);
+void suma_matriz (param * parametro, basetype * m1, basetype * m2, basetype * res);
+void multiplicacion (param * parametro, basetype * m1, basetype * m2, basetype * m3, int dim);
+void multiplicacionXTriangularU (param * parametro, basetype * m1, basetype * m2, basetype * m3, int dim);
+void multiplicacionXTriangularL (param * parametro, basetype * m1, basetype * m2, basetype * m3, int dim);
 
-void prodPromLU(param* parametro);
+void prodPromLU (param* parametro);
 void imprimir_matriz (basetype * matriz,int N);
-double dwalltime();
+double dwalltime ();
 
 
-// -- funciones secuenciales
+//Funciones secuenciales
 
-
-//-- 
 double tiempo_copia_total;
 
 #ifdef COMPARAR_SECUENCIAL
-void multiplicacion_secuencial				(basetype *A,basetype *B,basetype *C,int N);
-void multiplicacionXTriangularLSECUENCIAL	(basetype * m1, basetype * m2, basetype *m3, int dim);
-void multiplicacionXTriangularUSECUENCIAL	(basetype * m1, basetype * m2, basetype *m3, int dim);
-void promedioBSECUENCIAL					();
-void prod_escalarSECUENCIAL					(basetype * m1, basetype a, basetype * m2);
-void prodPromLUSECUENCIAL					();
+	void multiplicacion_secuencial (basetype *A,basetype *B,basetype *C,int N);
+	void multiplicacionXTriangularLSECUENCIAL (basetype * m1, basetype * m2, basetype *m3, int dim);
+	void multiplicacionXTriangularUSECUENCIAL (basetype * m1, basetype * m2, basetype *m3, int dim);
+	void promedioBSECUENCIAL ();
+	void prod_escalarSECUENCIAL (basetype * m1, basetype a, basetype * m2);
+	void prodPromLUSECUENCIAL ();
 
-void suma_matrizSECUENCIAL 					(basetype * m1, basetype * m2, basetype * res);
-void verificar_resultado					(basetype *C,basetype *C_secuencial,int N);
+	void suma_matrizSECUENCIAL (basetype * m1, basetype * m2, basetype * res);
+	void verificar_resultado (basetype *C,basetype *C_secuencial,int N);
 
-basetype *C_secuencial;	// Matriz resultado
+	basetype *C_secuencial;	// Matriz resultado
 #endif
-
 
 int main(int argc,char *argv[])
 {
@@ -130,11 +123,9 @@ int main(int argc,char *argv[])
 		return 0;
 	}
 
-
-	N = atoi(argv[1]);	// Dimensión de la matriz: N*N
+	N = atoi(argv[1]);	//Dimensión de la matriz: N*N
 	NT = (N*(N+1))/2;
 	CANT_THREADS = atoi(argv[2]);
-
 
 	printf("Dimensión de la matriz: %d*%d \n",N,N);
 
@@ -142,56 +133,50 @@ int main(int argc,char *argv[])
 	sumaParcialB = (basetype*)malloc(sizeof(basetype)*CANT_THREADS);
 	basetype promB;
 
-
-	// -- Arreglos usados para calcular promedios 
+	//Arreglos usados para calcular promedios 
 	sumaL = (basetype*)malloc(sizeof(basetype)*CANT_THREADS);
 	sumaU = (basetype*)malloc(sizeof(basetype)*CANT_THREADS);
 
-
 	// Reserva de memoria para las matrices
-	A=(basetype*)malloc(sizeof(basetype)*N*N);			// Reserva memoria para A
-	B=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para B
-	C=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para C
-	D=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para D
-	E=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para E	
-	F=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para F
+	A=(basetype*)malloc(sizeof(basetype)*N*N); // Reserva memoria para A
+	B=(basetype*)malloc(N*N*sizeof(basetype)); // Reserva memoria para B
+	C=(basetype*)malloc(N*N*sizeof(basetype)); // Reserva memoria para C
+	D=(basetype*)malloc(N*N*sizeof(basetype)); // Reserva memoria para D
+	E=(basetype*)malloc(N*N*sizeof(basetype)); // Reserva memoria para E	
+	F=(basetype*)malloc(N*N*sizeof(basetype)); // Reserva memoria para F
 
-	// -- caso especial de matrices triangulares
-	L=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para L
-	U=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para U	
+	//Caso especial de matrices triangulares
+	L=(basetype*)malloc(N*N*sizeof(basetype)); // Reserva memoria para L
+	U=(basetype*)malloc(N*N*sizeof(basetype)); // Reserva memoria para U	
 
+	LT=(basetype*)malloc(NT*NT*sizeof(basetype)); // Reserva memoria para L transformada para ahorrar espacio
+	UT=(basetype*)malloc(NT*NT*sizeof(basetype)); // Reserva memoria para U transformada para ahorrar espacio	
 
-	LT=(basetype*)malloc(NT*NT*sizeof(basetype));			// Reserva memoria para L transformada para ahorrar espacio
-	UT=(basetype*)malloc(NT*NT*sizeof(basetype));			// Reserva memoria para U transformada para ahorrar espacio	
-
-
-	// -- inicialización de matrices de resultados intermedios
-	AC=				(basetype*)malloc(sizeof(basetype)*N*N);
-	ULA=			(basetype*)malloc(sizeof(basetype)*N*N);
-	bL=				(basetype*)malloc(sizeof(basetype)*N*N);
-	BE=				(basetype*)malloc(sizeof(basetype)*N*N);
-	bD=				(basetype*)malloc(sizeof(basetype)*N*N);
-	UF=				(basetype*)malloc(sizeof(basetype)*N*N);
-	bDUF=			(basetype*)malloc(sizeof(basetype)*N*N);
-	bLBE=			(basetype*)malloc(sizeof(basetype)*N*N);
-	ulAAC=			(basetype*)malloc(sizeof(basetype)*N*N);
-	resultado=		(basetype*)malloc(sizeof(basetype)*N*N);
-	ULLACbLBE=		(basetype*)malloc(sizeof(basetype)*N*N);
-
+	//Inicialización de matrices de resultados intermedios
+	AC= (basetype*)malloc(sizeof(basetype)*N*N);
+	ULA= (basetype*)malloc(sizeof(basetype)*N*N);
+	bL= (basetype*)malloc(sizeof(basetype)*N*N);
+	BE= (basetype*)malloc(sizeof(basetype)*N*N);
+	bD= (basetype*)malloc(sizeof(basetype)*N*N);
+	UF= (basetype*)malloc(sizeof(basetype)*N*N);
+	bDUF= (basetype*)malloc(sizeof(basetype)*N*N);
+	bLBE= (basetype*)malloc(sizeof(basetype)*N*N);
+	ulAAC= (basetype*)malloc(sizeof(basetype)*N*N);
+	resultado= (basetype*)malloc(sizeof(basetype)*N*N);
+	ULLACbLBE= (basetype*)malloc(sizeof(basetype)*N*N);
 
 	printf("Matrices creadas \n");
 
 	#ifdef COMPARAR_SECUENCIAL
-	C_secuencial=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para C_SECUENCIAL
+	C_secuencial=(basetype*)malloc(N*N*sizeof(basetype));	// Reserva memoria para C_SECUENCIAL
 	#endif
 
+	//Inicialización ALEATORIA de las matrices
 
-	// -- Inicialización ALEATORIA de las matrices --
-
-	// Inicializa matrices A y B
+	//Inicializa matrices A y B
 	for(i=0;i<N;i++){
 		for(j=0;j<N;j++){
-			A[i*N+j]=rand()%5;  	// Inicializa matriz A con random
+			A[i*N+j]=rand()%5;  // Inicializa matriz A con random
 			B[i*N+j]=rand()%5; 	// Inicializa matriz B con random
 			C[i*N+j]=rand()%5; 	// Inicializa matriz B con random
 			D[i*N+j]=rand()%5; 	// Inicializa matriz B con random
@@ -200,7 +185,7 @@ int main(int argc,char *argv[])
 		}
 	}
 
-	// -- Inicializacion de matrices triangulares superior por columnas e inferior por filas
+	//Inicializacion de matrices triangulares superior por columnas e inferior por filas
 
 	for (int i = 0; i < N; ++i)
 	{
@@ -224,7 +209,7 @@ int main(int argc,char *argv[])
 		}
 	}
 
-	// -- Transformo las matrices triangulares en arreglos para ahorrar espacio y libero el espacio ocupado por las triangulares
+	//Transformo las matrices triangulares en arreglos para ahorrar espacio y libero el espacio ocupado por las triangulares
 	int indice;
 	for (int i = 0; i < N; ++i)
 	{
@@ -243,23 +228,22 @@ int main(int argc,char *argv[])
 	//free(U);
 	//free(L);
 
+	param parametros[CANT_THREADS];	//Arreglo de param (struct que contiene los datos para pasar a los threads)
 
-	param parametros[CANT_THREADS];	// Arreglo de param (struct que contiene los datos para pasar a los threads)
-
-	// -- Inicialización de threads --
-	pthread_t threads[CANT_THREADS];	// Arreglo de threads
+	//Inicialización de threads
+	pthread_t threads[CANT_THREADS];	//Arreglo de threads
 
 	if (pthread_barrier_init(&barrera,NULL,CANT_THREADS)!=0) {
 		printf("Error creacion de barrera\n");
 		return 0;
 	}
 
-	// Inicialización de parámetros
+	//Inicialización de parámetros
 	for (i=0;i<CANT_THREADS;i++){
 		parametros[i].id=i;
 	}
 	double tiempo_inicial=dwalltime();
-	// Creacion de los threads
+	//Creacion de los threads
 	for (i=0;i<CANT_THREADS;i++){
 		if (pthread_create( &threads[i],NULL,funcion_threads,(void*)&parametros[i])!=0) {
 			printf("Error creacion de thread\n");
@@ -267,7 +251,7 @@ int main(int argc,char *argv[])
 		}
 	}
 
-	// Join de los threads
+	//Join de los threads
 	for(i = 0; i < CANT_THREADS; i++) 
 	{
 		pthread_join(threads[i], NULL);
@@ -304,7 +288,7 @@ int main(int argc,char *argv[])
 		free(C_secuencial);
 	#endif
 
-	// Libera memoria
+	//Libera memoria
 	free(A);
 	free(B);
 	free(C);
@@ -349,30 +333,25 @@ int main(int argc,char *argv[])
 
 		if(id==0) printf("etapa 1\n");
 
-
 		prod_escalar(parametro,A,prodLU,ULA);
 		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
 		if(id==0) printf("etapa 2\n");
-
 
 		multiplicacion(parametro,ULA,AC,ulAAC,N);
 		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
 		if(id==0) printf("etapa 3\n");
 
-
 		promedioB(parametro);
 		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
 		if(id==0) printf("etapa 4\n");
 
-
 		multiplicacion(parametro,B,E,BE,N);	
 		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
 		if(id==0) printf("etapa 5\n");
-
 
 		//multiplicacionXTriangularL(parametro,BE,LT,bLBE,N);
 		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
@@ -409,8 +388,8 @@ int main(int argc,char *argv[])
 
 		if(id==0) printf("etapa 12\n");
 
-
-		if ((*parametro).id==0){
+		if ((*parametro).id==0)
+		{
 			printf("-- Fin de operacion (pthread) -->> \t Tiempo: %f \n",dwalltime()-tiempo_inicial2);
 			//printf("Matriz A:\n");
 		}
@@ -418,7 +397,6 @@ int main(int argc,char *argv[])
 }
 
 /*
-*
 *	m2 es triangular superior
 */
 void multiplicacionXTriangularU(param* parametro, basetype * m1, basetype * m2, basetype *m3, int dim)
@@ -428,18 +406,17 @@ void multiplicacionXTriangularU(param* parametro, basetype * m1, basetype * m2, 
 	basetype aux;
 	int i,j,k;
 
-
-	// Filas que multiplica el thread
-	int cant_filas = dim/CANT_THREADS;	// Cant de filas que multiplica cada thread
+	//Filas que multiplica el thread
+	int cant_filas = dim/CANT_THREADS;	//Cant de filas que multiplica cada thread
 	int fila_inicial = id*cant_filas;
 	int fila_final = fila_inicial + cant_filas -1;
 
-
 	for(int i=fila_inicial;i<=fila_final;i++)
-	{	// Recorre solo algunas filas
+	{	
+		//Recorre solo algunas filas
 		for(int j=0;j<dim;j++)
-		{	// Recorre todas las columnas
-
+		{	
+			//Recorre todas las columnas
 			total=0;
 			for(int k=0;k<dim;k++)
 			{
@@ -460,10 +437,11 @@ void multiplicacionXTriangularUSECUENCIAL(basetype * m1, basetype * m2, basetype
 	basetype aux;
 	basetype total;
 	for(int i=0;i<dim;i++)
-	{	// Recorre solo algunas filas
+	{	
+		//Recorre solo algunas filas
 		for(int j=0;j<dim;j++)
-		{	// Recorre todas las columnas
-
+		{	
+			//Recorre todas las columnas
 			total=0;
 			for(int k=0;k<dim;k++)
 			{
@@ -479,16 +457,16 @@ void multiplicacionXTriangularUSECUENCIAL(basetype * m1, basetype * m2, basetype
 	}
 }
 
-
 void multiplicacionXTriangularLSECUENCIAL( basetype * m1, basetype * m2, basetype *m3, int dim)
 {
 	basetype total;
 	basetype aux;
 	for(int i=0;i<dim;i++)
-	{	// Recorre solo algunas filas
+	{	
+		// Recorre solo algunas filas
 		for(int j=0;j<dim;j++)
-		{	// Recorre todas las columnas
-
+		{	
+			// Recorre todas las columnas
 			total=0;
 			for(int k=0;k<dim;k++)
 			{
@@ -505,7 +483,6 @@ void multiplicacionXTriangularLSECUENCIAL( basetype * m1, basetype * m2, basetyp
 }
 
 /*
-*
 *	m2 es triangular superior
 */
 void multiplicacionXTriangularL(param* parametro, basetype * m1, basetype * m2, basetype *m3, int dim)
@@ -515,18 +492,17 @@ void multiplicacionXTriangularL(param* parametro, basetype * m1, basetype * m2, 
 	basetype aux;
 	int i,j,k;
 
-
-	// Filas que multiplica el thread
-	int cant_filas = dim/CANT_THREADS;	// Cant de filas que multiplica cada thread
+	//Filas que multiplica el thread
+	int cant_filas = dim/CANT_THREADS;	//Cant de filas que multiplica cada thread
 	int fila_inicial = id*cant_filas;
 	int fila_final = fila_inicial + cant_filas -1;
 
-
 	for(int i=fila_inicial;i<=fila_final;i++)
-	{	// Recorre solo algunas filas
+	{	
+		//Recorre solo algunas filas
 		for(int j=0;j<dim;j++)
-		{	// Recorre todas las columnas
-
+		{	
+			//Recorre todas las columnas
 			total=0;
 			for(int k=0;k<dim;k++)
 			{
@@ -549,8 +525,7 @@ void multiplicacion(param* parametro, basetype * m1, basetype * m2, basetype * m
 	basetype total;
 	int i,j,k;
 
-
-	// Filas que multiplica el thread
+	//Filas que multiplica el thread
 	int cant_filas = dim/CANT_THREADS;	// Cant de filas que multiplica cada thread
 	int fila_inicial = id*cant_filas;
 	int fila_final = fila_inicial + cant_filas -1;
@@ -559,27 +534,26 @@ void multiplicacion(param* parametro, basetype * m1, basetype * m2, basetype * m
 
 	// Multiplica A*B=C
 	for(i=fila_inicial;i<=fila_final;i++)
-	{	// Recorre solo algunas filas
+	{	
+		//Recorre solo algunas filas
 		for(j=0;j<dim;j++)
-		{	// Recorre todas las columnas
+		{	
+			//Recorre todas las columnas
 			total=0;
 			for(k=0;k<dim;k++)
 			{
-				total+=m1[i*dim+k]*m2[k*dim+j];	// total=A*B
+				total+=m1[i*dim+k]*m2[k*dim+j];	//total=A*B
 			}
 			m3[i*dim+j] = total;
 		}
 	}
 }
 
-
-
 void prodPromLU(param* parametro)
 {
 	int id = (*parametro).id;
 	basetype total;
 	int i;
-
 
 	// Filas que suma el thread
 	int cant_filas = NT/CANT_THREADS;	// Cant de filas que suma cada thread
@@ -591,8 +565,8 @@ void prodPromLU(param* parametro)
 
 
 	for(i=fila_inicial;i<=fila_final;i++)
-	{	// Recorre solo algunas filas
-		
+	{	
+		//Recorre solo algunas filas
 		sumaL[id]+=UT[i];
 		sumaU[id]+=LT[i];
 		
@@ -610,18 +584,18 @@ void prodPromLU(param* parametro)
     	prodLU=promU*promL;
     }
 }
+
 basetype prodLUSEC;
 basetype sumaLSEC,sumaUSEC;
+
 void prodPromLUSECUENCIAL()
 {
 	sumaLSEC=0;
 	sumaUSEC=0;
 	for(int i=0;i<=NT;i++)
 	{	
-		
 			sumaLSEC+=UT[i];
 			sumaUSEC+=LT[i];
-		
 	}
 	
 	prodLUSEC=promU*promL;
@@ -634,7 +608,6 @@ void promedioB(param* parametro)
 	basetype total;
 	int i,j,k;
 
-
 	// Filas que multiplica el thread
 	int cant_filas = N/CANT_THREADS;	// Cant de filas que multiplica cada thread
 	int fila_inicial = id*cant_filas;
@@ -645,8 +618,10 @@ void promedioB(param* parametro)
 	// Multiplica A*B=C
 
 	for(i=fila_inicial;i<=fila_final;i++)
-	{										// Recorre solo algunas filas
-		for(j=0;j<N;j++)					// Recorre todas las columnas
+	{	
+		// Recorre solo algunas filas
+		for(j=0;j<N;j++)
+		// Recorre todas las columnas
 		{	
 			total+=B[i*N + j];
 		}
@@ -669,8 +644,10 @@ void promedioBSECUENCIAL()
 	basetype total=0;
 	// Multiplica A*B=C
 	for(int i=0;i<=N;i++)
-	{										// Recorre solo algunas filas
-		for(int j=0;j<N;j++)					// Recorre todas las columnas
+	{
+		// Recorre solo algunas filas
+		for(int j=0;j<N;j++)
+		// Recorre todas las columnas
 		{	
 			total+=B[i*N + j];
 		}
@@ -713,7 +690,6 @@ void prod_escalar (param * parametro, basetype * m1, basetype a, basetype * m2)
 void prod_escalarSECUENCIAL ( basetype * m1, basetype a, basetype * m2)
 {
 	
-
 	for (int i = 0; i < N; ++i)
 	{
 		for (int j = 0; j < N; ++j)
@@ -737,7 +713,8 @@ void suma_matriz (param * parametro, basetype * m1, basetype * m2, basetype * re
 			res[i*N+j]	=	m1[i*N+j]	+	m2[i*N+j];		
 		}
 	}
-}			
+}
+
 void suma_matrizSECUENCIAL ( basetype * m1, basetype * m2, basetype * res)
 {
 	for (int i = 0; i < N; ++i)
@@ -748,7 +725,6 @@ void suma_matrizSECUENCIAL ( basetype * m1, basetype * m2, basetype * res)
 		}
 	}
 }			
-
 
 double dwalltime(){
 	double sec;
@@ -787,12 +763,14 @@ void multiplicacion_secuencial(basetype *A,basetype *B,basetype *C,int N){
 void verificar_resultado(basetype *C,basetype *C_secuencial,int N){
 	int i,j;
 	int check = 1;
-	for(i=0;i<N;i++){
-		for(j=0;j<N;j++){
+	for(i=0;i<N;i++)
+	{
+		for(j=0;j<N;j++)
+		{
 			check=check&&(C[i*N+j]==C_secuencial[i*N+j]);
 		}
 	}
-		if(check)
+	if(check)
 	{
 		printf("Resultado correcto\n");
 	}
