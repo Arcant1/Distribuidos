@@ -32,7 +32,7 @@ typedef struct param
 // Matrices
 basetype *A;
 basetype *B;
-basetype *C;	//Matriz resultado
+basetype *C;	
 basetype *D;
 basetype *E;
 basetype *F;
@@ -77,7 +77,7 @@ double tiempo_sec;
 
 basetype factor_global;
 
-pthread_barrier_t barrera; 		//Barrerra
+pthread_barrier_t barrera; 		// Barrera
 
 //Definición de funciones concurrentes
 
@@ -96,7 +96,8 @@ double dwalltime ();
 
 //Funciones secuenciales
 
-//Codigo auxiliar
+
+//-- 
 double tiempo_copia_total;
 
 #ifdef COMPARAR_SECUENCIAL
@@ -226,8 +227,8 @@ int main(int argc,char *argv[])
 	}
 	printf("Matrices inicializadas \n");
 
-	free(U);
-	free(L);
+	//free(U);
+	//free(L);
 
 	param parametros[CANT_THREADS];	//Arreglo de param (struct que contiene los datos para pasar a los threads)
 
@@ -258,7 +259,7 @@ int main(int argc,char *argv[])
 		pthread_join(threads[i], NULL);
 
 	}
-
+	pthread_barrier_destroy(&barrera);
 	tiempo_paral = dwalltime()-tiempo_inicial;
 	printf("\nTiempo Total (pthreads) : %f\n\n",dwalltime()-tiempo_inicial);
 
@@ -314,86 +315,87 @@ int main(int argc,char *argv[])
 // -- FUNCIONES PTHREADS //
 // ------------------------
 
-	void *funcion_threads(void *arg) {
+	void *funcion_threads(void *arg) 
+	{
 		param* parametro = (param*)arg;
 		double tiempo_inicial2;
 		int id = (*parametro).id;
 
-	//printf("Mi ID es: %d \n",(*parametro).id);
 		if ((*parametro).id==0){
 			tiempo_inicial2=dwalltime();
 		}
 
-	multiplicacion(parametro,A,C,AC,N);
-	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+		multiplicacion(parametro,A,C,AC,N);
+		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
-	if(id==0) printf("etapa 0\n");
+		if(id==0) printf("etapa 0\n");
 
-	prodPromLU(parametro);
-	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+		prodPromLU(parametro);
+		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
-	if(id==0) printf("etapa 1\n");
+		if(id==0) printf("etapa 1\n");
 
-	prod_escalar(parametro,A,prodLU,ULA);
-	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+		prod_escalar(parametro,A,prodLU,ULA);
+		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
-	if(id==0) printf("etapa 2\n");
+		if(id==0) printf("etapa 2\n");
 
-	multiplicacion(parametro,ULA,AC,ulAAC,N);
-	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+		multiplicacion(parametro,ULA,AC,ulAAC,N);
+		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
-	if(id==0) printf("etapa 3\n");
+		if(id==0) printf("etapa 3\n");
 
-	promedioB(parametro);
-	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+		promedioB(parametro);
+		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
-	if(id==0) printf("etapa 4\n");
+		if(id==0) printf("etapa 4\n");
 
-	multiplicacion(parametro,B,E,BE,N);	
-	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+		multiplicacion(parametro,B,E,BE,N);	
+		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
-	if(id==0) printf("etapa 5\n");
+		if(id==0) printf("etapa 5\n");
 
-	multiplicacionXTriangularL(parametro,BE,LT,bLBE,N);
-	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+		//multiplicacionXTriangularL(parametro,BE,LT,bLBE,N);
+		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
-	if(id==0) printf("etapa 6\n");
+		if(id==0) printf("etapa 6\n");
 
-	prod_escalar(parametro,bLBE,promB,bLBE);
-	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+		prod_escalar(parametro,bLBE,promB,bLBE);
+		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
-	if(id==0) printf("etapa 7\n");
+		if(id==0) printf("etapa 7\n");
 
-	prod_escalar(parametro,D,promB,bD);
-	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+		prod_escalar(parametro,D,promB,bD);
+		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
-	if(id==0) printf("etapa 8\n");
+		if(id==0) printf("etapa 8\n");
 
-	multiplicacionXTriangularU(parametro,F,UT,UF,N);
-	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+		multiplicacionXTriangularU(parametro,F,UT,UF,N);
+		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
-	if(id==0) printf("etapa 9\n");
+		if(id==0) printf("etapa 9\n");
 
-	multiplicacion(parametro,bD,UF,bDUF,N);
-	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+		multiplicacion(parametro,bD,UF,bDUF,N);
+		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
-	if(id==0) printf("etapa 10\n");
+		if(id==0) printf("etapa 10\n");
 
-	suma_matriz(parametro,ulAAC,bLBE,ULLACbLBE);
-	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+		suma_matriz(parametro,ulAAC,bLBE,ULLACbLBE);
+		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
-	if(id==0) printf("etapa 11\n");
+		if(id==0) printf("etapa 11\n");
 
-	suma_matriz(parametro,ULLACbLBE,bDUF,resultado);
-	pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+		suma_matriz(parametro,ULLACbLBE,bDUF,resultado);
+		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
-	if(id==0) printf("etapa 12\n");
+		if(id==0) printf("etapa 12\n");
 
-	if ((*parametro).id==0){
-		printf("-- Fin de operacion (pthread) -->> \t Tiempo: %f \n",dwalltime()-tiempo_inicial2);
-		//printf("Matriz A:\n");
-	}
-	pthread_exit(NULL);
+		if ((*parametro).id==0)
+		{
+			printf("-- Fin de operacion (pthread) -->> \t Tiempo: %f \n",dwalltime()-tiempo_inicial2);
+			//printf("Matriz A:\n");
+		}
+		pthread_exit(NULL);
 }
 
 /*
@@ -422,7 +424,7 @@ void multiplicacionXTriangularU(param* parametro, basetype * m1, basetype * m2, 
 			{
 				if(i>=j)
 				{
-					aux=m2[i*NT + j - i*(i+1)/2];
+					aux=m2[j + 	k*dim - j*(j+1)/2];
 				}
 				else aux = 0;
 				total+=m1[i*dim+k]*aux;	
@@ -508,10 +510,11 @@ void multiplicacionXTriangularL(param* parametro, basetype * m1, basetype * m2, 
 			{
 				if(i<=j)
 				{
-					aux=m2[i+j*NT - i*(i+1)/2];
+					aux=m2[j + 	k*dim - j*(j+1)/2];
 				}
-				else aux = 0;
-				total+=m1[i*dim+k]*aux;	
+				else 
+					aux = 0;
+				total 	+=	m1[i*dim + k]*aux;	
 			}
 			m3[i*dim+j] = total;
 		}
@@ -615,6 +618,7 @@ void promedioB(param* parametro)
 	//printf("ID: %d \t fila_inicial=%d \t fila_final=%d \n",id,fila_inicial,fila_final);
 	total=0;
 	// Multiplica A*B=C
+
 	for(i=fila_inicial;i<=fila_final;i++)
 	{	
 		// Recorre solo algunas filas
