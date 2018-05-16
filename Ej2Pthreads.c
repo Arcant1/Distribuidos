@@ -301,7 +301,6 @@ int main(int argc,char *argv[])
 		}
 
 		//Transformo las matrices triangulares en arreglos para ahorrar espacio y libero el espacio ocupado por las triangulares
-		int indice;
 		for (int i = 0; i < N; ++i)
 		{
 			for (int j = 0; j < N; ++j)
@@ -317,41 +316,71 @@ int main(int argc,char *argv[])
 
 		tiempo_inicial=dwalltime();
 		
+		printf("etapa 0\n");
 		AC= (basetype*)malloc(sizeof(basetype)*N*N);
 		multiplicacion_secuencial(A,C,AC,N);
 		free(C);
 
+		printf("etapa 1\n");
 		prodPromLUSECUENCIAL();
 		
+		printf("etapa 2\n");
 		ULA= (basetype*)malloc(sizeof(basetype)*N*N);
 		prod_escalarSECUENCIAL(A,prodLU,ULA);
 		free(A);
 
+		printf("etapa 3\n");
 		ulAAC= (basetype*)malloc(sizeof(basetype)*N*N);
 		multiplicacion_secuencial(ULA,AC,ulAAC,N);
 		free(AC);
 		free(ULA);
 		
+		printf("etapa 4\n");
 		promedioBSECUENCIAL();
 		
+		printf("etapa 5\n");
 		BE= (basetype*)malloc(sizeof(basetype)*N*N);
 		multiplicacion_secuencial(B,E,BE,N);
 		free(B);
 		free(E);
 		
+		printf("etapa 6\n");
+		bLBE= (basetype*)malloc(sizeof(basetype)*N*N);
 		multiplicacionXTriangularLSECUENCIAL(BE,LT,bLBE,N);
-		
+		free(BE);
+		free(LT);
+
+		printf("etapa 7\n");
 		prod_escalarSECUENCIAL(bLBE,promB,bLBE);
 		
+		printf("etapa 8\n");
+		bD= (basetype*)malloc(sizeof(basetype)*N*N);
 		prod_escalarSECUENCIAL(D,promB,bD);
-		
+		free(D);
+
+		printf("etapa 9\n");
+		UF= (basetype*)malloc(sizeof(basetype)*N*N);		
 		multiplicacionXTriangularUSECUENCIAL(F,UT,UF,N);
-		
+		free(F);
+		free(UT);
+
+		printf("etapa 10\n");
+		bDUF= (basetype*)malloc(sizeof(basetype)*N*N);		
 		multiplicacion_secuencial(bD,UF,bDUF,N);
+		free(bD);
+		free(UF);
 		
+		printf("etapa 11\n");
+		ULLACbLBE= (basetype*)malloc(sizeof(basetype)*N*N);		
 		suma_matrizSECUENCIAL(ulAAC,bLBE,ULLACbLBE);
-		
+		free(ulAAC);
+		free(bLBE);
+
+		printf("etapa 12\n");
+		resultado= (basetype*)malloc(sizeof(basetype)*N*N);		
 		suma_matrizSECUENCIAL(ULLACbLBE,bDUF,resultado);
+		free(ULLACbLBE);
+		free(bDUF);
 
 		tiempo_sec = dwalltime()-tiempo_inicial;
 		printf("-- Fin de multiplicacion (secuencial) -->> \t Tiempo: %f \n", tiempo_sec);
