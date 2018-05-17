@@ -32,7 +32,7 @@ typedef struct param
 // Matrices
 basetype *A;
 basetype *B;
-basetype *C;	
+basetype *C;
 basetype *D;
 basetype *E;
 basetype *F;
@@ -134,7 +134,7 @@ int main(int argc,char *argv[])
 	sumaParcialB = (basetype*)malloc(sizeof(basetype)*CANT_THREADS);
 	basetype promB;
 
-	//Arreglos usados para calcular promedios 
+	//Arreglos usados para calcular promedios
 	sumaL = (basetype*)malloc(sizeof(basetype)*CANT_THREADS);
 	sumaU = (basetype*)malloc(sizeof(basetype)*CANT_THREADS);
 
@@ -143,19 +143,19 @@ int main(int argc,char *argv[])
 	B=(basetype*)malloc(N*N*sizeof(basetype)); // Reserva memoria para B
 	C=(basetype*)malloc(N*N*sizeof(basetype)); // Reserva memoria para C
 	D=(basetype*)malloc(N*N*sizeof(basetype)); // Reserva memoria para D
-	E=(basetype*)malloc(N*N*sizeof(basetype)); // Reserva memoria para E	
+	E=(basetype*)malloc(N*N*sizeof(basetype)); // Reserva memoria para E
 	F=(basetype*)malloc(N*N*sizeof(basetype)); // Reserva memoria para F
 
 	//Caso especial de matrices triangulares
 	L=(basetype*)malloc(N*N*sizeof(basetype)); // Reserva memoria para L
-	U=(basetype*)malloc(N*N*sizeof(basetype)); // Reserva memoria para U	
+	U=(basetype*)malloc(N*N*sizeof(basetype)); // Reserva memoria para U
 
 	LT=(basetype*)malloc(NT*sizeof(basetype)); // Reserva memoria para L transformada para ahorrar espacio
-	UT=(basetype*)malloc(NT*sizeof(basetype)); // Reserva memoria para U transformada para ahorrar espacio		
+	UT=(basetype*)malloc(NT*sizeof(basetype)); // Reserva memoria para U transformada para ahorrar espacio
 
 	printf("Matrices creadas \n");
 
-	
+
 
 	//Inicialización ALEATORIA de las matrices
 
@@ -191,7 +191,7 @@ int main(int argc,char *argv[])
 			else
 			{
 				L[i*N+j]=rand()%5;
-				U[i*N+j]=0;	
+				U[i*N+j]=0;
 			}
 		}
 	}
@@ -213,7 +213,7 @@ int main(int argc,char *argv[])
 	}
 	printf("Matrices inicializadas \n");
 
-	
+
 
 	param parametros[CANT_THREADS];	//Arreglo de param (struct que contiene los datos para pasar a los threads)
 
@@ -240,38 +240,51 @@ int main(int argc,char *argv[])
 	}
 
 	//Join de los threads
-	for(i = 0; i < CANT_THREADS; i++) 
+	for(i = 0; i < CANT_THREADS; i++)
 	{
 		pthread_join(threads[i], NULL);
 
 	}
-	free(A);
-	free(B);
-	free(C);free(D);free(E);free(F);free(L);free(U);
-	free(LT);free(UT);
-	free(AC);free(ULA);free(ulAAC);free(BE);free(bLBE);
-	free(bD);
-	free(UF);free(bDUF);free(ULLACbLBE);
+
 
 	pthread_barrier_destroy(&barrera);
 	tiempo_paral = dwalltime()-tiempo_inicial;
 	printf("\nTiempo Total (pthreads) : %f\n\n",dwalltime()-tiempo_inicial);
 
+	free(A);
+	free(B);
+	free(C);
+	free(D);
+	free(E);
+	free(F);
+	//free(L);
+	//free(U);
+	//free(LT);
+	//free(UT);
+	free(AC);
+	free(ULA);
+	free(ulAAC);
+	free(BE);
+	free(bLBE);
+	free(bD);
+	free(UF);
+	free(bDUF);
+	free(ULLACbLBE);
 
-	A=(basetype*)malloc(N*N*sizeof(basetype)); // Reserva memoria para A
-	B=(basetype*)malloc(N*N*sizeof(basetype)); // Reserva memoria para B
-	C=(basetype*)malloc(N*N*sizeof(basetype)); // Reserva memoria para C
-	D=(basetype*)malloc(N*N*sizeof(basetype)); // Reserva memoria para D
-	E=(basetype*)malloc(N*N*sizeof(basetype)); // Reserva memoria para E	
-	F=(basetype*)malloc(N*N*sizeof(basetype)); // Reserva memoria para F
+	A=(basetype*)   malloc(N*N*sizeof(basetype)); // Reserva memoria para A
+	B=(basetype*)   malloc(N*N*sizeof(basetype)); // Reserva memoria para B
+	C=(basetype*)   malloc(N*N*sizeof(basetype)); // Reserva memoria para C
+	D=(basetype*)   malloc(N*N*sizeof(basetype)); // Reserva memoria para D
+	E=(basetype*)   malloc(N*N*sizeof(basetype)); // Reserva memoria para E
+	F=(basetype*)   malloc(N*N*sizeof(basetype)); // Reserva memoria para F
 																		//Caso especial de matrices triangulares
-	L=(basetype*)malloc(N*N*sizeof(basetype)); // Reserva memoria para L
-	U=(basetype*)malloc(N*N*sizeof(basetype)); // Reserva memoria para U	
+	L=(basetype*)   malloc(N*N*sizeof(basetype)); // Reserva memoria para L
+	U=(basetype*)   malloc(N*N*sizeof(basetype)); // Reserva memoria para U
 
-	LT=(basetype*)malloc(NT*sizeof(basetype)); // Reserva memoria para L transformada para ahorrar espacio
-	UT=(basetype*)malloc(NT*sizeof(basetype)); // Reserva memoria para U transformada para ahorrar espacio		
+	LT=(basetype*)  malloc(NT*sizeof(basetype)); // Reserva memoria para L transformada para ahorrar espacio
+	UT=(basetype*)  malloc(NT*sizeof(basetype)); // Reserva memoria para U transformada para ahorrar espacio
 	printf("Matrices creadas\n");
-	
+
 
 
 
@@ -281,9 +294,9 @@ int main(int argc,char *argv[])
 	BE 		=	(basetype*)malloc(sizeof(basetype)*N*N);
 	bLBE	=	(basetype*)malloc(sizeof(basetype)*N*N);
 	bD 		=	(basetype*)malloc(sizeof(basetype)*N*N);
-	UF		=	(basetype*)malloc(sizeof(basetype)*N*N);		
-	bDUF	=	(basetype*)malloc(sizeof(basetype)*N*N);		
-	ULLACbLBE=	(basetype*)malloc(sizeof(basetype)*N*N);		
+	UF		=	(basetype*)malloc(sizeof(basetype)*N*N);
+	bDUF	=	(basetype*)malloc(sizeof(basetype)*N*N);
+	ULLACbLBE=	(basetype*)malloc(sizeof(basetype)*N*N);
 
 	for(i=0;i<N;i++)
 	{
@@ -318,7 +331,7 @@ int main(int argc,char *argv[])
 			else
 			{
 				L[i*N+j]=rand()%5;
-				U[i*N+j]=0;	
+				U[i*N+j]=0;
 			}
 		}
 	}
@@ -329,63 +342,63 @@ int main(int argc,char *argv[])
 	{
 		for (int j = 0; j < N; ++j)
 		{
-			indice = (N*i)+j-(i*(i+1)/2);		
+			indice = (N*i)+j-(i*(i+1)/2);
 			UT[indice] = U[i*N+j];
 			indice = (N*j)+i-(j*(j+1)/2);
-			LT[indice] = L[i*N+j];		
+			LT[indice] = L[i*N+j];
 
 		}
 	}
 	printf("Matrices LT y UT inicializadas \n");
 
-	printf("Matrices inicializadas\n");		
+	printf("Matrices inicializadas\n");
 	tiempo_inicial=dwalltime();
-	
+
 	printf("etapa 0\n");
 	multiplicacion_secuencial(A,C,AC,N);
 
 	printf("etapa 1\n");
 	prodPromLUSECUENCIAL();
-	
+
 	printf("etapa 2\n");
 	prod_escalarSECUENCIAL(A,prodLU,ULA);
 
 	printf("etapa 3\n");
 	multiplicacion_secuencial(ULA,AC,ulAAC,N);
-	
-	
+
+
 	printf("etapa 4\n");
 	promedioBSECUENCIAL();
-	
+
 	printf("etapa 5\n");
 	multiplicacion_secuencial(B,E,BE,N);
-	
+
 	printf("etapa 6\n");
 	multiplicacionXTriangularLSECUENCIAL(BE,LT,bLBE,N);
-	
+
 
 	printf("etapa 7\n");
 	prod_escalarSECUENCIAL(bLBE,promB,bLBE);
-	
+
 	printf("etapa 8\n");
 	prod_escalarSECUENCIAL(D,promB,bD);
 
 	printf("etapa 9\n");
 	multiplicacionXTriangularUSECUENCIAL(F,UT,UF,N);
-	
+
 
 	printf("etapa 10\n");
 	multiplicacion_secuencial(bD,UF,bDUF,N);
-	
-	
+
+
 	printf("etapa 11\n");
 	suma_matrizSECUENCIAL(ulAAC,bLBE,ULLACbLBE);
-	
+
 
 	printf("etapa 12\n");
-	resultado= (basetype*)malloc(sizeof(basetype)*N*N);		
+	resultado= (basetype*)malloc(sizeof(basetype)*N*N);
 	suma_matrizSECUENCIAL(ULLACbLBE,bDUF,resultado);
-	
+
 
 	tiempo_sec = dwalltime()-tiempo_inicial;
 	printf("-- Fin de multiplicacion (secuencial) -->> \t Tiempo: %f \n", tiempo_sec);
@@ -410,7 +423,7 @@ int main(int argc,char *argv[])
 // -- FUNCIONES PTHREADS //
 // ------------------------
 
-	void *funcion_threads(void *arg) 
+	void *funcion_threads(void *arg)
 	{
 		param* parametro = (param*)arg;
 		double tiempo_inicial2;
@@ -420,7 +433,7 @@ int main(int argc,char *argv[])
 			tiempo_inicial2=dwalltime();
 			AC= (basetype*)malloc(sizeof(basetype)*N*N);
 		}
-		
+
 		pthread_barrier_wait(&barrera);
 		multiplicacion(parametro,A,C,AC,N);
 		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
@@ -436,7 +449,7 @@ int main(int argc,char *argv[])
 		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
 		if(id==0){
-			ULA= (basetype*)malloc(sizeof(basetype)*N*N);			
+			ULA= (basetype*)malloc(sizeof(basetype)*N*N);
 			printf("etapa 1\n");
 		}
 
@@ -445,7 +458,7 @@ int main(int argc,char *argv[])
 		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
 		if(id==0) {
-			ulAAC= (basetype*)malloc(sizeof(basetype)*N*N);			
+			ulAAC= (basetype*)malloc(sizeof(basetype)*N*N);
 			printf("etapa 2\n");
 		}
 
@@ -462,18 +475,18 @@ int main(int argc,char *argv[])
 		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
 		if(id==0) {
-			BE = (basetype*)malloc(sizeof(basetype)*N*N);			
+			BE = (basetype*)malloc(sizeof(basetype)*N*N);
 			printf("etapa 4\n");
 		}
 
 		pthread_barrier_wait(&barrera);
-		multiplicacion(parametro,B,E,BE,N);	
+		multiplicacion(parametro,B,E,BE,N);
 		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
 		if(id==0) {
 			printf("etapa 5\n");
 
-			bLBE = (basetype*)malloc(sizeof(basetype)*N*N);			
+			bLBE = (basetype*)malloc(sizeof(basetype)*N*N);
 
 		}
 
@@ -490,7 +503,7 @@ int main(int argc,char *argv[])
 		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
 		if(id==0) {
-			bD = (basetype*)malloc(sizeof(basetype)*N*N);			
+			bD = (basetype*)malloc(sizeof(basetype)*N*N);
 			printf("etapa 7\n");
 		}
 
@@ -500,7 +513,7 @@ int main(int argc,char *argv[])
 
 		if(id==0) {
 			printf("etapa 8\n");
-			UF = (basetype*)malloc(sizeof(basetype)*N*N);			
+			UF = (basetype*)malloc(sizeof(basetype)*N*N);
 
 		}
 
@@ -509,9 +522,9 @@ int main(int argc,char *argv[])
 		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
 		if(id==0) {
-			
+
 			printf("etapa 9\n");
-			bDUF = (basetype*)malloc(sizeof(basetype)*N*N);			
+			bDUF = (basetype*)malloc(sizeof(basetype)*N*N);
 
 		}
 
@@ -520,7 +533,7 @@ int main(int argc,char *argv[])
 		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
 		if(id==0) {
-			ULLACbLBE = (basetype*)malloc(sizeof(basetype)*N*N);			
+			ULLACbLBE = (basetype*)malloc(sizeof(basetype)*N*N);
 			printf("etapa 10\n");
 		}
 
@@ -558,7 +571,6 @@ void multiplicacionXTriangularU(param* parametro, basetype * m1, basetype * m2, 
 	int id = (*parametro).id;
 	basetype total;
 	basetype aux;
-	int i,j,k;
 
 	//Filas que multiplica el thread
 	int cant_filas = dim/CANT_THREADS;	//Cant de filas que multiplica cada thread
@@ -566,10 +578,10 @@ void multiplicacionXTriangularU(param* parametro, basetype * m1, basetype * m2, 
 	int fila_final = fila_inicial + cant_filas -1;
 
 	for(int i=fila_inicial;i<=fila_final;i++)
-	{	
+	{
 		//Recorre solo algunas filas
 		for(int j=0;j<dim;j++)
-		{	
+		{
 			//Recorre todas las columnas
 			total=0;
 			for(int k=0;k<dim;k++)
@@ -579,7 +591,7 @@ void multiplicacionXTriangularU(param* parametro, basetype * m1, basetype * m2, 
 					aux=m2[	j + k*(k+1)/2];
 				}
 				else aux = 0;
-				total+=m1[i*dim+k]*aux;	
+				total+=m1[i*dim+k]*aux;
 			}
 			m3[i*dim+j] = total;
 		}
@@ -591,10 +603,10 @@ void multiplicacionXTriangularUSECUENCIAL(basetype * m1, basetype * m2, basetype
 	basetype aux;
 	basetype total;
 	for(int i=0;i<dim;i++)
-	{	
+	{
 		//Recorre solo algunas filas
 		for(int j=0;j<dim;j++)
-		{	
+		{
 			//Recorre todas las columnas
 			total=0;
 			for(int k=0;k<dim;k++)
@@ -605,7 +617,7 @@ void multiplicacionXTriangularUSECUENCIAL(basetype * m1, basetype * m2, basetype
 
 				}
 				else aux = 0;
-				total+=m1[i*dim+k]*aux;	
+				total+=m1[i*dim+k]*aux;
 			}
 			m3[i*dim+j] = total;
 		}
@@ -617,10 +629,10 @@ void multiplicacionXTriangularLSECUENCIAL( basetype * m1, basetype * m2, basetyp
 	basetype total;
 	basetype aux;
 	for(int i=0;i<dim;i++)
-	{	
+	{
 		// Recorre solo algunas filas
 		for(int j=0;j<dim;j++)
-		{	
+		{
 			// Recorre todas las columnas
 			total=0;
 			for(int k=0;k<dim;k++)
@@ -630,7 +642,7 @@ void multiplicacionXTriangularLSECUENCIAL( basetype * m1, basetype * m2, basetyp
 					aux=m2[	k + j*(j+1)/2];
 				}
 				else aux = 0;
-				total+=m1[i*dim+k]*aux;	
+				total+=m1[i*dim+k]*aux;
 			}
 			m3[i*dim+j] = total;
 		}
@@ -645,18 +657,16 @@ void multiplicacionXTriangularL(param* parametro, basetype * m1, basetype * m2, 
 	int id = (*parametro).id;
 	basetype total;
 	basetype aux;
-	int i,j,k;
-	unsigned long p;
 	//Filas que multiplica el thread
 	int cant_filas = dim/CANT_THREADS;	//Cant de filas que multiplica cada thread
 	int fila_inicial = id*cant_filas;
 	int fila_final = fila_inicial + cant_filas -1;
 
 	for(int i=fila_inicial;i<=fila_final;i++)
-	{	
+	{
 		//Recorre solo algunas filas
 		for(int j=0;j<dim;j++)
-		{	
+		{
 			//Recorre todas las columnas
 			total=0;
 			for(int k=0;k<N;k++)
@@ -668,9 +678,9 @@ void multiplicacionXTriangularL(param* parametro, basetype * m1, basetype * m2, 
 					//printf("%lu \n",p);
 					aux=m2[	k + j*(j+1)/2];
 				}
-				else 
+				else
 					aux = 0;
-				total 	+=	m1[i*dim + k]*aux;	
+				total 	+=	m1[i*dim + k]*aux;
 			}
 			m3[i*dim+j] = total;
 		}
@@ -692,10 +702,10 @@ void multiplicacion(param* parametro, basetype * m1, basetype * m2, basetype * m
 
 	// Multiplica A*B=C
 	for(i=fila_inicial;i<=fila_final;i++)
-	{	
+	{
 		//Recorre solo algunas filas
 		for(j=0;j<dim;j++)
-		{	
+		{
 			//Recorre todas las columnas
 			total=0;
 			for(k=0;k<dim;k++)
@@ -710,7 +720,6 @@ void multiplicacion(param* parametro, basetype * m1, basetype * m2, basetype * m
 void prodPromLU(param* parametro)
 {
 	int id = (*parametro).id;
-	basetype total;
 	int i;
 
 	// Filas que suma el thread
@@ -723,11 +732,11 @@ void prodPromLU(param* parametro)
 
 
 	for(i=fila_inicial;i<=fila_final;i++)
-	{	
+	{
 		//Recorre solo algunas filas
 		sumaL[id]+=UT[i];
 		sumaU[id]+=LT[i];
-		
+
 	}
 	pthread_barrier_wait(&barrera); //Espera a que todas terminen
     if(id == 0)						//si es el hilo principal
@@ -751,11 +760,11 @@ void prodPromLUSECUENCIAL()
 	sumaLSEC=0;
 	sumaUSEC=0;
 	for(int i=0;i<=NT;i++)
-	{	
+	{
 			sumaLSEC+=UT[i];
 			sumaUSEC+=LT[i];
 	}
-	
+
 	prodLUSEC=promU*promL;
 
 }
@@ -764,7 +773,7 @@ void promedioB(param* parametro)
 {
 	int id = (*parametro).id;
 	basetype total;
-	int i,j,k;
+	int i,j;
 
 	// Filas que multiplica el thread
 	int cant_filas = N/CANT_THREADS;	// Cant de filas que multiplica cada thread
@@ -776,11 +785,11 @@ void promedioB(param* parametro)
 	// Multiplica A*B=C
 
 	for(i=fila_inicial;i<=fila_final;i++)
-	{	
+	{
 		// Recorre solo algunas filas
 		for(j=0;j<N;j++)
 		// Recorre todas las columnas
-		{	
+		{
 			total+=B[i*N + j];
 		}
 	}
@@ -798,7 +807,7 @@ void promedioB(param* parametro)
 
 void promedioBSECUENCIAL()
 {
-	
+
 	basetype total=0;
 	// Multiplica A*B=C
 	for(int i=0;i<=N;i++)
@@ -806,11 +815,11 @@ void promedioBSECUENCIAL()
 		// Recorre solo algunas filas
 		for(int j=0;j<N;j++)
 		// Recorre todas las columnas
-		{	
+		{
 			total+=B[i*N + j];
 		}
 	}
-	
+
 	promB =total/(N*N);
 
 }
@@ -820,7 +829,7 @@ void promedioBSECUENCIAL()
 // --------------------------
 
 void imprimir_matriz (basetype * matriz,int N){
-	
+
 	for (int i=0;i<N;i++){
 		for (int j = 0 ; j < N ; j++){
 			printf ("%.1f\t",matriz [ i * N + j ]);
@@ -847,7 +856,7 @@ void prod_escalar (param * parametro, basetype * m1, basetype a, basetype * m2)
 
 void prod_escalarSECUENCIAL ( basetype * m1, basetype a, basetype * m2)
 {
-	
+
 	for (int i = 0; i < N; ++i)
 	{
 		for (int j = 0; j < N; ++j)
@@ -868,7 +877,7 @@ void suma_matriz (param * parametro, basetype * m1, basetype * m2, basetype * re
 	{
 		for (int j = 0; j < N; ++j)
 		{
-			res[i*N+j]	=	m1[i*N+j]	+	m2[i*N+j];		
+			res[i*N+j]	=	m1[i*N+j]	+	m2[i*N+j];
 		}
 	}
 }
@@ -879,10 +888,10 @@ void suma_matrizSECUENCIAL ( basetype * m1, basetype * m2, basetype * res)
 	{
 		for (int j = 0; j < N; ++j)
 		{
-			res[i*N+j]	=	m1[i*N+j]	+	m2[i*N+j];		
+			res[i*N+j]	=	m1[i*N+j]	+	m2[i*N+j];
 		}
 	}
-}			
+}
 
 double dwalltime(){
 	double sec;
