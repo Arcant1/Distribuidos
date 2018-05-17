@@ -116,7 +116,8 @@ int main(int argc,char *argv[])
 {
 	int i;
 	int j;
-
+	register unsigned long indice;
+	double tiempo_inicial;
 	if (argc != 3) {
 		printf("Error en la cantidad de parámetros. Parametro 1 -> long matriz Parametro 2 -> n° threads");
 		printf("Ingresar la dimension de la matriz!\n");
@@ -124,7 +125,7 @@ int main(int argc,char *argv[])
 	}
 
 	N = atoi(argv[1]);	//Dimensión de la matriz: N*N
-	NT = (N*(N+1))/2;
+	NT = N*N-(N*(N+1))/2;
 	CANT_THREADS = atoi(argv[2]);
 
 	printf("Dimensión de la matriz: %d*%d \n",N,N);
@@ -149,14 +150,12 @@ int main(int argc,char *argv[])
 	L=(basetype*)malloc(N*N*sizeof(basetype)); // Reserva memoria para L
 	U=(basetype*)malloc(N*N*sizeof(basetype)); // Reserva memoria para U	
 
-	LT=(basetype*)malloc(NT*NT*sizeof(basetype)); // Reserva memoria para L transformada para ahorrar espacio
-	UT=(basetype*)malloc(NT*NT*sizeof(basetype)); // Reserva memoria para U transformada para ahorrar espacio		
+	LT=(basetype*)malloc(NT*sizeof(basetype)); // Reserva memoria para L transformada para ahorrar espacio
+	UT=(basetype*)malloc(NT*sizeof(basetype)); // Reserva memoria para U transformada para ahorrar espacio		
 
 	printf("Matrices creadas \n");
 
-	#ifdef COMPARAR_SECUENCIAL
-	C_secuencial=(basetype*)malloc(N*N*sizeof(basetype));	// Reserva memoria para C_SECUENCIAL
-	#endif
+	
 
 	//Inicialización ALEATORIA de las matrices
 
@@ -171,6 +170,7 @@ int main(int argc,char *argv[])
 			F[i*N+j]=rand()%5; 	// Inicializa matriz B con random
 		}
 	}
+	printf("Matrices inicializadas 1\n");
 
 	//Inicializacion de matrices triangulares superior por columnas e inferior por filas
 
@@ -195,16 +195,18 @@ int main(int argc,char *argv[])
 			}
 		}
 	}
-
+	printf("Matrices LU inicializadas \n");
+	indice = NT;
 	//Transformo las matrices triangulares en arreglos para ahorrar espacio y libero el espacio ocupado por las triangulares
-	int indice;
+	printf("%lu\n",indice);
 	for (int i = 0; i < N; ++i)
 	{
 		for (int j = 0; j < N; ++j)
 		{
-			indice = N * i + j - ((i *(i+1))/2);
+			indice = NT * i + j - ((i *(i+1))/2);
+			printf("%lu \n",indice);
 			UT[indice]	= U[i*N + j];
-			indice = N * j + i - ((j *(j+1))/2);
+			indice = NT * j + i - ((j *(j+1))/2);
 			LT[indice] = L[i*N+j];
 			//UT[i*NT + j - i*(i+1)/2]	=	U[i*N+j];
 			//LT[j*N + i - j*(j+1)/2]	=	L[j*N+i];
@@ -229,7 +231,8 @@ int main(int argc,char *argv[])
 	for (i=0;i<CANT_THREADS;i++){
 		parametros[i].id=i;
 	}
-	double tiempo_inicial=dwalltime();
+	tiempo_inicial=dwalltime();
+
 	//Creacion de los threads
 	for (i=0;i<CANT_THREADS;i++){
 		if (pthread_create( &threads[i],NULL,funcion_threads,(void*)&parametros[i])!=0) {
@@ -244,6 +247,7 @@ int main(int argc,char *argv[])
 		pthread_join(threads[i], NULL);
 
 	}
+
 	pthread_barrier_destroy(&barrera);
 	tiempo_paral = dwalltime()-tiempo_inicial;
 	printf("\nTiempo Total (pthreads) : %f\n\n",dwalltime()-tiempo_inicial);
@@ -262,6 +266,7 @@ int main(int argc,char *argv[])
 
 		LT=(basetype*)malloc(NT*NT*sizeof(basetype)); // Reserva memoria para L transformada para ahorrar espacio
 		UT=(basetype*)malloc(NT*NT*sizeof(basetype)); // Reserva memoria para U transformada para ahorrar espacio		
+		printf("Matrices creadas\n");
 
 		for(i=0;i<N;i++)
 		{
@@ -275,6 +280,7 @@ int main(int argc,char *argv[])
 				F[i*N+j]=rand()%5; 	// Inicializa matriz B con random
 			}
 		}
+		printf("Matrices inicializadas 1\n");
 
 		//Inicializacion de matrices triangulares superior por columnas e inferior por filas
 
@@ -299,21 +305,27 @@ int main(int argc,char *argv[])
 				}
 			}
 		}
+		printf("Matrices LU inicializadas \n");
 
 		//Transformo las matrices triangulares en arreglos para ahorrar espacio y libero el espacio ocupado por las triangulares
 		for (int i = 0; i < N; ++i)
 		{
 			for (int j = 0; j < N; ++j)
 			{
-				indice = N * i + j - ((i *(i+1))/2);
+				indice = NT * i + j - ((i *(i+1))/2);
+				if(indice<0)printf("ERROR\n");
 				UT[indice]	= U[i*N + j];
-				indice = N * j + i - ((j *(j+1))/2);
+				indice = NT * j + i - ((j *(j+1))/2);
+				if(indice<0)printf("ERROR\n");
+
 				LT[indice] = L[i*N+j];
 				//UT[i*NT + j - i*(i+1)/2]	=	U[i*N+j];
 				//LT[j*N + i - j*(j+1)/2]	=	L[j*N+i];
 			}
 		}
+		printf("Matrices LT y UT inicializadas \n");
 
+		printf("Matrices inicializadas\n");		
 		tiempo_inicial=dwalltime();
 		
 		printf("etapa 0\n");
@@ -609,7 +621,8 @@ void multiplicacionXTriangularUSECUENCIAL(basetype * m1, basetype * m2, basetype
 			{
 				if(i>=j)
 				{
-					aux=m2[j + 	k*dim - j*(j+1)/2];
+					if(j + 	k*NT - j*(j+1)/2 < 0) continue;
+					aux=m2[j + 	k*NT - j*(j+1)/2];
 				}
 				else aux = 0;
 				total+=m1[i*dim+k]*aux;	
@@ -632,7 +645,7 @@ void multiplicacionXTriangularLSECUENCIAL( basetype * m1, basetype * m2, basetyp
 			total=0;
 			for(int k=0;k<dim;k++)
 			{
-				if(i>=j)
+				if(i<=j)
 				{
 					aux=m2[j + 	k*dim - j*(j+1)/2];
 				}
