@@ -82,6 +82,7 @@ void suma_matrizOMP ( basetype * m1, basetype * m2, basetype * res);
 void multiplicacion_omp ( basetype * m1, basetype * m2, basetype * m3, int dim);
 void multiplicacionXTriangularUOMP ( basetype * m1, basetype * m2, basetype * m3, int dim);
 void multiplicacionXTriangularLOMP ( basetype * m1, basetype * m2, basetype * m3, int dim);
+void funcion_OMP(void);
 
 void prodPromLUOMP ();
 void imprimir_matriz (basetype * matriz,int N);
@@ -92,19 +93,17 @@ double dwalltime ();
 
 double tiempo_copia_total;
 
-#ifdef COMPARAR_SECUENCIAL
-	void multiplicacion_secuencial (basetype *A,basetype *B,basetype *C,int N);
-	void multiplicacionXTriangularLSECUENCIAL (basetype * m1, basetype * m2, basetype *m3, int dim);
-	void multiplicacionXTriangularUSECUENCIAL (basetype * m1, basetype * m2, basetype *m3, int dim);
-	void promedioBSECUENCIAL ();
-	void prod_escalarSECUENCIAL (basetype * m1, basetype a, basetype * m2);
-	void prodPromLUSECUENCIAL ();
+void multiplicacion_secuencial (basetype *A,basetype *B,basetype *C,int N);
+void multiplicacionXTriangularLSECUENCIAL (basetype * m1, basetype * m2, basetype *m3, int dim);
+void multiplicacionXTriangularUSECUENCIAL (basetype * m1, basetype * m2, basetype *m3, int dim);
+void promedioBSECUENCIAL ();
+void prod_escalarSECUENCIAL (basetype * m1, basetype a, basetype * m2);
+void prodPromLUSECUENCIAL ();
 
-	void suma_matrizSECUENCIAL (basetype * m1, basetype * m2, basetype * res);
-	void verificar_resultado (basetype *C,basetype *C_secuencial,int N);
+void suma_matrizSECUENCIAL (basetype * m1, basetype * m2, basetype * res);
+void verificar_resultado (basetype *C,basetype *C_secuencial,int N);
 
-	basetype *C_secuencial;	// Matriz resultado
-#endif
+basetype *C_secuencial;	// Matriz resultado
 
 int main(int argc,char *argv[])
 {
@@ -219,7 +218,8 @@ int main(int argc,char *argv[])
 		}
 	}
 	printf("Matrices inicializadas \n");
-
+	tiempo_inicial = dwalltime();
+	funcion_OMP();
 
 	tiempo_paral = dwalltime()-tiempo_inicial;
 	printf("\nTiempo Total (OMP) : %f\n\n",dwalltime()-tiempo_inicial);
@@ -378,13 +378,13 @@ int main(int argc,char *argv[])
 
 	speedup = tiempo_sec / tiempo_paral;
 	printf("-- Speedup conseguido: %f \n", speedup);
-	eficiencia = speedup / CANT_THREADS;
+	eficiencia = speedup / omp_get_num_threads();
 	printf("-- Eficiencia: %f \n", eficiencia);
 
 
 	//Libera memoria
 
-	free(resultado);
+	/*free(resultado);
 	free(A);
 	free(B);
 	free(C);
@@ -403,7 +403,7 @@ int main(int argc,char *argv[])
 	free(bD);
 	free(UF);
 	free(bDUF);
-	free(ULLACbLBE);
+	free(ULLACbLBE);*/
 	return(0);
 }
 
@@ -415,77 +415,74 @@ int main(int argc,char *argv[])
 // -- FUNCIONES PTHREADS //
 // ------------------------
 
-	void funcion_OMP()
-	{
-		double tiempo_inicial2;
-		
-		tiempo_inicial2=dwalltime();
-		
-		multiplicacion_omp(A,C,AC,N);
+void funcion_OMP()
+{
+	double tiempo_inicial2 = dwalltime();
+	multiplicacion_omp(A,C,AC,N);
 
-		printf("etapa 0\n");
-		
-
-		prodPromLUOMP();
-
-		printf("etapa 1\n");
-
-		prod_escalarOMP(A,prodLU,ULA);
-
-		printf("etapa 2\n");
-
-		multiplicacion_omp(ULA,AC,ulAAC,N);
-
-		printf("etapa 3\n");
-		
-
-		promedioBOMP();
-
-		printf("etapa 4\n");
-
-		multiplicacion_omp(B,E,BE,N);
-
-		printf("etapa 5\n");
-
-		multiplicacionXTriangularLOMP(BE,LT,bLBE,N);
-
-		printf("etapa 6\n");
-		
-
-		prod_escalarOMP(bLBE,promB,bLBE);
-
-		printf("etapa 7\n");
-		
-
-		prod_escalarOMP(D,promB,bD);
-
-
-		printf("etapa 8\n");
-		
-		multiplicacionXTriangularUOMP(F,UT,UF,N);
-
-
-		printf("etapa 9\n");
-
-		
-		multiplicacion_omp(bD,UF,bDUF,N);
-
-		printf("etapa 10\n");
-		
-
-		suma_matrizOMP(ulAAC,bLBE,ULLACbLBE);
-
-		printf("etapa 11\n");
-		resultado= (basetype*)malloc(sizeof(basetype)*N*N);
-
-		
-		suma_matrizOMP(ULLACbLBE,bDUF,resultado);
-
-		printf("etapa 12\n");
+	printf("etapa 0\n");
 	
+
+	prodPromLUOMP();
+
+	printf("etapa 1\n");
+
+	prod_escalarOMP(A,prodLU,ULA);
+
+	printf("etapa 2\n");
+
+	multiplicacion_omp(ULA,AC,ulAAC,N);
+
+	printf("etapa 3\n");
 	
-		printf("-- Fin de operacion (OMP) -->> \t Tiempo: %f \n",dwalltime()-tiempo_inicial2);
-		//printf("Matriz A:\n");
+
+	promedioBOMP();
+
+	printf("etapa 4\n");
+
+	multiplicacion_omp(B,E,BE,N);
+
+	printf("etapa 5\n");
+
+	multiplicacionXTriangularLOMP(BE,LT,bLBE,N);
+
+	printf("etapa 6\n");
+	
+
+	prod_escalarOMP(bLBE,promB,bLBE);
+
+	printf("etapa 7\n");
+	
+
+	prod_escalarOMP(D,promB,bD);
+
+
+	printf("etapa 8\n");
+	
+	multiplicacionXTriangularUOMP(F,UT,UF,N);
+
+
+	printf("etapa 9\n");
+
+	
+	multiplicacion_omp(bD,UF,bDUF,N);
+
+	printf("etapa 10\n");
+	
+
+	suma_matrizOMP(ulAAC,bLBE,ULLACbLBE);
+
+	printf("etapa 11\n");
+	resultado= (basetype*)malloc(sizeof(basetype)*N*N);
+
+	
+	suma_matrizOMP(ULLACbLBE,bDUF,resultado);
+
+	printf("etapa 12\n");
+
+
+	printf("-- Fin de operacion (OMP) -->> \t Tiempo: %f \n",dwalltime()-tiempo_inicial2);
+	//printf("Matriz A:\n");
 }
 
 /*
@@ -496,7 +493,7 @@ void multiplicacionXTriangularUOMP(basetype * m1, basetype * m2, basetype *m3, i
 	basetype total;
 	basetype aux;
 	int i,j,k;
-	# pragma omp parallel for private(i,j,k)
+	#pragma omp parallel for schedule(auto) private(i,j,k) shared(m1,m2,m3)
 	for( i=0;i<=dim;i++)
 	{
 		//Recorre solo algunas filas
@@ -524,9 +521,8 @@ void multiplicacionXTriangularOMP(basetype * m1, basetype * m2, basetype *m3, in
 	basetype total;
 	basetype aux;
 	int i,j,k;
-# pragma omp parallel for private(i,j,k)
-	for( i=0;i<dim;i++)
-	{
+	#pragma omp parallel for schedule(auto) private(i,j,k) shared(m1,m2,m3)
+	
 		for( j=0;j<dim;j++)
 		{
 			total=0;
@@ -541,7 +537,7 @@ void multiplicacionXTriangularOMP(basetype * m1, basetype * m2, basetype *m3, in
 			}
 			m3[i*dim+j] = total;
 		}
-	}
+	
 }
 
 void multiplicacionXTriangularLOMP( basetype * m1, basetype * m2, basetype *m3, int dim)
@@ -549,7 +545,7 @@ void multiplicacionXTriangularLOMP( basetype * m1, basetype * m2, basetype *m3, 
 	basetype total;
 	basetype aux;
 	int i,j,k;
-# pragma omp parallel for private(i,j,k)
+	#pragma omp parallel for schedule(auto) private(i,j,k) shared(m1,m2,m3)
 	for( i=0;i<dim;i++)
 	{
 		for( j=0;j<dim;j++)
@@ -573,7 +569,7 @@ void multiplicacionXTriangularLOMP( basetype * m1, basetype * m2, basetype *m3, 
 void multiplicacion_omp(basetype *A,basetype *B,basetype *C,int N)
 {
 	int i,j,k;
-# pragma omp parallel for private(i,j,k)
+	#pragma omp parallel for schedule(auto) private(i,j,k) shared(A,B,C)
 	for(i=0;i<N;i++){ 
 		for(j=0;j<N;j++){
 			C[i*N+j]=0;
@@ -600,13 +596,13 @@ void prodPromLUOMP()
 
 	}
 	
-	for (int i = 0; i < omp_get_num_thread(); ++i)
+	for (int i = 0; i < omp_get_num_threads(); ++i)
 	{
 		promL+=sumaL[i];
 		promU+=sumaU[i];
 	}
-	promL/=omp_get_num_thread();
-	promU/=omp_get_num_thread();
+	promL/=omp_get_num_threads();
+	promU/=omp_get_num_threads();
 	prodLU=promU*promL;
     
 }
@@ -647,7 +643,7 @@ void promedioBOMP()
 	}
 	sumaParcialB[omp_get_thread_num()]=total;
    
-	for (int i = 0; i < omp_get_num_thread(); ++i)
+	for (int i = 0; i < omp_get_num_threads(); ++i)
 	{
 		promB+=sumaParcialB[i];
 	}
@@ -688,7 +684,7 @@ void imprimir_matriz (basetype * matriz,int N){
 	}
 }
 
-void prod_escalarOMP (basetype * m1, basetype a, basetype * m2, int N)
+void prod_escalarOMP (basetype * m1, basetype a, basetype * m2)
 {
 	int i,j;
 # pragma omp parallel for private(i,j)
@@ -713,7 +709,7 @@ void prod_escalarSECUENCIAL ( basetype * m1, basetype a, basetype * m2)
 	}
 }
 
-void suma_matrizOMP (basetype * m1, basetype * m2, basetype * res,int N)
+void suma_matrizOMP (basetype * m1, basetype * m2, basetype * res)
 {
 	int i,j;
 # pragma omp parallel for private(i,j)
@@ -788,5 +784,56 @@ void verificar_resultado(basetype *C,basetype *C_secuencial,int N){
 	else
 	{
 		printf("Resultado erroneo \n");
+	}
+}
+
+void multiplicacionXTriangularUSECUENCIAL(basetype * m1, basetype * m2, basetype *m3, int dim)
+{
+	basetype aux;
+	basetype total;
+	for(int i=0;i<dim;i++)
+	{
+		//Recorre solo algunas filas
+		for(int j=0;j<dim;j++)
+		{
+			//Recorre todas las columnas
+			total=0;
+			for(int k=0;k<dim;k++)
+			{
+				if(i>=j)
+				{
+					aux=m2[	j + k*(k+1)/2];
+
+				}
+				else aux = 0;
+				total+=m1[i*dim+k]*aux;
+			}
+			m3[i*dim+j] = total;
+		}
+	}
+}
+
+void multiplicacionXTriangularLSECUENCIAL( basetype * m1, basetype * m2, basetype *m3, int dim)
+{
+	basetype total;
+	basetype aux;
+	for(int i=0;i<dim;i++)
+	{
+		// Recorre solo algunas filas
+		for(int j=0;j<dim;j++)
+		{
+			// Recorre todas las columnas
+			total=0;
+			for(int k=0;k<dim;k++)
+			{
+				if(i<=j)
+				{
+					aux=m2[	k + j*(j+1)/2];
+				}
+				else aux = 0;
+				total+=m1[i*dim+k]*aux;
+			}
+			m3[i*dim+j] = total;
+		}
 	}
 }
