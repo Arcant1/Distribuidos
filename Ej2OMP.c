@@ -21,16 +21,11 @@ typedef float basetype;   // Tipo para elementos: float     PREDETERMINADO
 #define tipo_dato    "floats"
 #endif
 
-// Tipo de dato que se pasa de parámetro a los threads
-typedef struct param
-{
-	int id;
-} param;
 
 //Variables globales
 
 // Matrices
-basetype *A
+basetype *A;
 basetype *B;
 basetype *C;
 basetype *D;
@@ -62,8 +57,7 @@ basetype * bLBE;
 basetype * ulAAC;
 basetype * resultado;
 
-int cant_filas_restantes;	// Cantidad de filas que restan ordenar
-int cant_filas_x_thread;	// Cantidad de filas que procesa cada thread en cada iteración (va disminuyendo)
+
 int pos_max_global;
 
 int N;
@@ -81,15 +75,15 @@ pthread_barrier_t barrera; 		// Barrera
 
 //Definición de funciones concurrentes
 
-void *funcion_threads (void *arg);
-void promedioB (param* parametro);
-void prod_escalar (param * parametro, basetype * m1, basetype a, basetype * m2);
-void suma_matriz (param * parametro, basetype * m1, basetype * m2, basetype * res);
-void multiplicacion (param * parametro, basetype * m1, basetype * m2, basetype * m3, int dim);
-void multiplicacionXTriangularU (param * parametro, basetype * m1, basetype * m2, basetype * m3, int dim);
-void multiplicacionXTriangularL (param * parametro, basetype * m1, basetype * m2, basetype * m3, int dim);
+void funcion_threads (void *arg);
+void promedioBOMP ();
+void prod_escalarOMP (basetype * m1, basetype a, basetype * m2);
+void suma_matrizOMP ( basetype * m1, basetype * m2, basetype * res);
+void multiplicacion_omp ( basetype * m1, basetype * m2, basetype * m3, int dim);
+void multiplicacionXTriangularUOMP ( basetype * m1, basetype * m2, basetype * m3, int dim);
+void multiplicacionXTriangularLOMP ( basetype * m1, basetype * m2, basetype * m3, int dim);
 
-void prodPromLU (param* parametro);
+void prodPromLUOMP ();
 void imprimir_matriz (basetype * matriz,int N);
 double dwalltime ();
 
@@ -126,7 +120,7 @@ int main(int argc,char *argv[])
 
 	N = atoi(argv[1]);	//Dimensión de la matriz: N*N
 	NT = N*N-(N*(N+1))/2;
-	CANT_THREADS = atoi(argv[2]);
+	omp_set_num_threads(atoi(argv[2]));
 
 	printf("Dimensión de la matriz: %d*%d \n",N,N);
 
@@ -170,6 +164,7 @@ int main(int argc,char *argv[])
 	//Inicialización ALEATORIA de las matrices
 
 	//Inicializa matrices A y B
+	# pragma omp parallel for private(i,j)
 	for(i=0;i<N;i++){
 		for(j=0;j<N;j++){
 			A[i*N+j]=rand()%5;  // Inicializa matriz A con random
@@ -183,7 +178,7 @@ int main(int argc,char *argv[])
 	printf("Matrices inicializadas 1\n");
 
 	//Inicializacion de matrices triangulares superior por columnas e inferior por filas
-
+# pragma omp parallel for private(i,j)
 	for (int i = 0; i < N; ++i)
 	{
 		for (int j = 0; j < N; ++j)
@@ -208,9 +203,11 @@ int main(int argc,char *argv[])
 	printf("Matrices LU inicializadas \n");
 
 	//Transformo las matrices triangulares en arreglos para ahorrar espacio y libero el espacio ocupado por las triangulares
-	for (int i = 0; i < N; ++i)
+# pragma omp parallel for private(i,j)
+
+	for ( i = 0; i < N; ++i)
 	{
-		for (int j = 0; j < N; ++j)
+		for ( j = 0; j < N; ++j)
 		{
 			indice = N * i + j - ((i *(i+1))/2);
 			UT[indice]	= U[i*N + j];
@@ -224,42 +221,8 @@ int main(int argc,char *argv[])
 	printf("Matrices inicializadas \n");
 
 
-
-	param parametros[CANT_THREADS];	//Arreglo de param (struct que contiene los datos para pasar a los threads)
-
-	//Inicialización de threads
-	pthread_t threads[CANT_THREADS];	//Arreglo de threads
-
-	if (pthread_barrier_init(&barrera,NULL,CANT_THREADS)!=0) {
-		printf("Error creacion de barrera\n");
-		return 0;
-	}
-
-	//Inicialización de parámetros
-	for (i=0;i<CANT_THREADS;i++){
-		parametros[i].id=i;
-	}
-	tiempo_inicial=dwalltime();
-
-	//Creacion de los threads
-	for (i=0;i<CANT_THREADS;i++){
-		if (pthread_create( &threads[i],NULL,funcion_threads,(void*)&parametros[i])!=0) {
-			printf("Error creacion de thread\n");
-			return 0;
-		}
-	}
-
-	//Join de los threads
-	for(i = 0; i < CANT_THREADS; i++)
-	{
-		pthread_join(threads[i], NULL);
-
-	}
-
-
-	pthread_barrier_destroy(&barrera);
 	tiempo_paral = dwalltime()-tiempo_inicial;
-	printf("\nTiempo Total (pthreads) : %f\n\n",dwalltime()-tiempo_inicial);
+	printf("\nTiempo Total (OMP) : %f\n\n",dwalltime()-tiempo_inicial);
 
 	/*free(A);
 	free(B);
@@ -452,135 +415,88 @@ int main(int argc,char *argv[])
 // -- FUNCIONES PTHREADS //
 // ------------------------
 
-	void *funcion_threads(void *arg)
+	void funcion_OMP()
 	{
-		param* parametro = (param*)arg;
 		double tiempo_inicial2;
-		int id = (*parametro).id;
+		
+		tiempo_inicial2=dwalltime();
+		
+		multiplicacion_omp(A,C,AC,N);
 
-		if ((*parametro).id==0){
-			tiempo_inicial2=dwalltime();
-		}
+		printf("etapa 0\n");
+		
 
-		multiplicacion(parametro,A,C,AC,N);
-		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+		prodPromLUOMP();
 
+		printf("etapa 1\n");
 
+		prod_escalarOMP(A,prodLU,ULA);
 
-		if(id==0){
-			printf("etapa 0\n");
-		}
+		printf("etapa 2\n");
 
-		prodPromLU(parametro);
-		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+		multiplicacion_omp(ULA,AC,ulAAC,N);
 
-		if(id==0){
-			printf("etapa 1\n");
-		}
+		printf("etapa 3\n");
+		
 
-		prod_escalar(parametro,A,prodLU,ULA);
-		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+		promedioBOMP();
 
-		if(id==0) {
-			printf("etapa 2\n");
-		}
+		printf("etapa 4\n");
 
-		multiplicacion(parametro,ULA,AC,ulAAC,N);
-		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+		multiplicacion_omp(B,E,BE,N);
 
-		if(id==0) {
-			printf("etapa 3\n");
-		}
+		printf("etapa 5\n");
 
-		promedioB(parametro);
-		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+		multiplicacionXTriangularLOMP(BE,LT,bLBE,N);
 
-		if(id==0) {
-			printf("etapa 4\n");
-		}
+		printf("etapa 6\n");
+		
 
-		multiplicacion(parametro,B,E,BE,N);
-		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+		prod_escalarOMP(bLBE,promB,bLBE);
 
-		if(id==0) {
-			printf("etapa 5\n");
+		printf("etapa 7\n");
+		
+
+		prod_escalarOMP(D,promB,bD);
 
 
-		}
+		printf("etapa 8\n");
+		
+		multiplicacionXTriangularUOMP(F,UT,UF,N);
 
-		multiplicacionXTriangularL(parametro,BE,LT,bLBE,N);
-		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
 
-		if(id==0) {
-			printf("etapa 6\n");
-		}
+		printf("etapa 9\n");
 
-		prod_escalar(parametro,bLBE,promB,bLBE);
-		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+		
+		multiplicacion_omp(bD,UF,bDUF,N);
 
-		if(id==0) {
-			printf("etapa 7\n");
-		}
+		printf("etapa 10\n");
+		
 
-		prod_escalar(parametro,D,promB,bD);
-		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
+		suma_matrizOMP(ulAAC,bLBE,ULLACbLBE);
 
-		if(id==0) {
-			printf("etapa 8\n");
+		printf("etapa 11\n");
+		resultado= (basetype*)malloc(sizeof(basetype)*N*N);
 
-		}
+		
+		suma_matrizOMP(ULLACbLBE,bDUF,resultado);
 
-		multiplicacionXTriangularU(parametro,F,UT,UF,N);
-		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
-
-		if(id==0) {
-
-			printf("etapa 9\n");
-
-		}
-
-		multiplicacion(parametro,bD,UF,bDUF,N);
-		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
-
-		if(id==0) {
-			printf("etapa 10\n");
-		}
-
-		suma_matriz(parametro,ulAAC,bLBE,ULLACbLBE);
-		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
-
-		if(id==0) {
-			printf("etapa 11\n");
-			resultado= (basetype*)malloc(sizeof(basetype)*N*N);
-
-		}
-
-		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
-		suma_matriz(parametro,ULLACbLBE,bDUF,resultado);
-		pthread_barrier_wait(&barrera); //espero a que todos los hilos finalicen
-
-		if(id==0) {
-			printf("etapa 12\n");
-		}
-
-		if ((*parametro).id==0)
-		{
-			printf("-- Fin de operacion (pthread) -->> \t Tiempo: %f \n",dwalltime()-tiempo_inicial2);
-			//printf("Matriz A:\n");
-		}
-		pthread_exit(NULL);
+		printf("etapa 12\n");
+	
+	
+		printf("-- Fin de operacion (OMP) -->> \t Tiempo: %f \n",dwalltime()-tiempo_inicial2);
+		//printf("Matriz A:\n");
 }
 
 /*
 *	m2 es triangular superior
 */
-void multiplicacionXTriangularUOMP(param* parametro, basetype * m1, basetype * m2, basetype *m3, int dim)
+void multiplicacionXTriangularUOMP(basetype * m1, basetype * m2, basetype *m3, int dim)
 {
 	basetype total;
 	basetype aux;
-
-# pragma omp parallel for private(i,j,k)
-
+	int i,j,k;
+	# pragma omp parallel for private(i,j,k)
 	for( i=0;i<=dim;i++)
 	{
 		//Recorre solo algunas filas
@@ -600,6 +516,7 @@ void multiplicacionXTriangularUOMP(param* parametro, basetype * m1, basetype * m
 			m3[i*dim+j] = total;
 		}
 	}
+	
 }
 
 void multiplicacionXTriangularOMP(basetype * m1, basetype * m2, basetype *m3, int dim)
@@ -667,34 +584,29 @@ void multiplicacion_omp(basetype *A,basetype *B,basetype *C,int N)
 	}   
 }
 
-void prodPromLU(param* parametro)
+void prodPromLUOMP()
 {
 	int i;
 
-	// Filas que suma el thread
-	int cant_filas = NT/CANT_THREADS;	// Cant de filas que suma cada thread
-	int fila_inicial = id*cant_filas;
-	int fila_final = fila_inicial + cant_filas -1;
-
-	sumaL[omp_get_thread_num]=0;
-	sumaU[omp_get_thread_num]=0;
+	sumaL[omp_get_thread_num()]=0;
+	sumaU[omp_get_thread_num()]=0;
 
 # pragma omp parallel for private(i)
 	for(i=0;i<=NT;i++)
 	{
 		//Recorre solo algunas filas
-		sumaL[omp_get_thread_num]+=UT[i];
-		sumaU[omp_get_thread_num]+=LT[i];
+		sumaL[omp_get_thread_num()]+=UT[i];
+		sumaU[omp_get_thread_num()]+=LT[i];
 
 	}
 	
-	for (int i = 0; i < omp_get_num_thread; ++i)
+	for (int i = 0; i < omp_get_num_thread(); ++i)
 	{
 		promL+=sumaL[i];
 		promU+=sumaU[i];
 	}
-	promL/=omp_get_num_thread;
-	promU/=omp_get_num_thread;
+	promL/=omp_get_num_thread();
+	promU/=omp_get_num_thread();
 	prodLU=promU*promL;
     
 }
@@ -716,7 +628,7 @@ void prodPromLUSECUENCIAL()
 
 }
 
-void promedioBOMP(param* parametro)
+void promedioBOMP()
 {
 	basetype total;
 	int i,j;
@@ -733,9 +645,9 @@ void promedioBOMP(param* parametro)
 			total+=B[i*N + j];
 		}
 	}
-	sumaParcialB[omp_get_thread_num]=total;
+	sumaParcialB[omp_get_thread_num()]=total;
    
-	for (int i = 0; i < omp_get_num_thread; ++i)
+	for (int i = 0; i < omp_get_num_thread(); ++i)
 	{
 		promB+=sumaParcialB[i];
 	}
