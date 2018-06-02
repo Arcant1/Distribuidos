@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
-#include <pthread.h>
+#include <omp.h>
 
 #define COMPARAR_SECUENCIAL
 
@@ -574,25 +574,21 @@ int main(int argc,char *argv[])
 /*
 *	m2 es triangular superior
 */
-void multiplicacionXTriangularU(param* parametro, basetype * m1, basetype * m2, basetype *m3, int dim)
+void multiplicacionXTriangularUOMP(param* parametro, basetype * m1, basetype * m2, basetype *m3, int dim)
 {
-	int id = (*parametro).id;
 	basetype total;
 	basetype aux;
 
-	//Filas que multiplica el thread
-	int cant_filas = dim/CANT_THREADS;	//Cant de filas que multiplica cada thread
-	int fila_inicial = id*cant_filas;
-	int fila_final = fila_inicial + cant_filas -1;
+# pragma omp parallel for private(i,j,k)
 
-	for(int i=fila_inicial;i<=fila_final;i++)
+	for( i=0;i<=dim;i++)
 	{
 		//Recorre solo algunas filas
-		for(int j=0;j<dim;j++)
+		for( j=0;j<dim;j++)
 		{
 			//Recorre todas las columnas
 			total=0;
-			for(int k=0;k<dim;k++)
+			for( k=0;k<dim;k++)
 			{
 				if(i>=j)
 				{
@@ -606,128 +602,73 @@ void multiplicacionXTriangularU(param* parametro, basetype * m1, basetype * m2, 
 	}
 }
 
-void multiplicacionXTriangularUSECUENCIAL(basetype * m1, basetype * m2, basetype *m3, int dim)
-{
-	basetype aux;
-	basetype total;
-	for(int i=0;i<dim;i++)
-	{
-		//Recorre solo algunas filas
-		for(int j=0;j<dim;j++)
-		{
-			//Recorre todas las columnas
-			total=0;
-			for(int k=0;k<dim;k++)
-			{
-				if(i>=j)
-				{
-					aux=m2[	j + k*(k+1)/2];
-
-				}
-				else aux = 0;
-				total+=m1[i*dim+k]*aux;
-			}
-			m3[i*dim+j] = total;
-		}
-	}
-}
-
-void multiplicacionXTriangularLSECUENCIAL( basetype * m1, basetype * m2, basetype *m3, int dim)
+void multiplicacionXTriangularOMP(basetype * m1, basetype * m2, basetype *m3, int dim)
 {
 	basetype total;
 	basetype aux;
-	for(int i=0;i<dim;i++)
-	{
-		// Recorre solo algunas filas
-		for(int j=0;j<dim;j++)
-		{
-			// Recorre todas las columnas
-			total=0;
-			for(int k=0;k<dim;k++)
-			{
-				if(i<=j)
-				{
-					aux=m2[	k + j*(j+1)/2];
-				}
-				else aux = 0;
-				total+=m1[i*dim+k]*aux;
-			}
-			m3[i*dim+j] = total;
-		}
-	}
-}
-
-/*
-*	m2 es triangular superior
-*/
-void multiplicacionXTriangularL(param* parametro, basetype * m1, basetype * m2, basetype *m3, int dim)
-{
-	int id = (*parametro).id;
-	basetype total;
-	basetype aux;
-	//Filas que multiplica el thread
-	int cant_filas = dim/CANT_THREADS;	//Cant de filas que multiplica cada thread
-	int fila_inicial = id*cant_filas;
-	int fila_final = fila_inicial + cant_filas -1;
-
-	for(int i=fila_inicial;i<=fila_final;i++)
-	{
-		//Recorre solo algunas filas
-		for(int j=0;j<dim;j++)
-		{
-			//Recorre todas las columnas
-			total=0;
-			for(int k=0;k<N;k++)
-			{
-				if(i<=j)
-				{
-					//p=j + j*(j+1)/2;
-					//if (p > 1500000)printf("%d %d\n",j,k);
-					//printf("%lu \n",p);
-					aux=m2[	k + j*(j+1)/2];
-				}
-				else
-					aux = 0;
-				total 	+=	m1[i*dim + k]*aux;
-			}
-			m3[i*dim+j] = total;
-		}
-	}
-}
-
-void multiplicacion(param* parametro, basetype * m1, basetype * m2, basetype * m3, int dim)
-{
-	int id = (*parametro).id;
-	basetype total;
 	int i,j,k;
-
-	//Filas que multiplica el thread
-	int cant_filas = dim/CANT_THREADS;	// Cant de filas que multiplica cada thread
-	int fila_inicial = id*cant_filas;
-	int fila_final = fila_inicial + cant_filas -1;
-
-	//printf("ID: %d \t fila_inicial=%d \t fila_final=%d \n",id,fila_inicial,fila_final);
-
-	// Multiplica A*B=C
-	for(i=fila_inicial;i<=fila_final;i++)
+# pragma omp parallel for private(i,j,k)
+	for( i=0;i<dim;i++)
 	{
-		//Recorre solo algunas filas
-		for(j=0;j<dim;j++)
+		for( j=0;j<dim;j++)
 		{
-			//Recorre todas las columnas
 			total=0;
-			for(k=0;k<dim;k++)
+			for( k=0;k<dim;k++)
 			{
-				total+=m1[i*dim+k]*m2[k*dim+j];	//total=A*B
+				if(i<=j)
+				{
+					aux=m2[	j + k*(k+1)/2];
+				}
+				else aux = 0;
+				total+=m1[i*dim+k]*aux;
 			}
 			m3[i*dim+j] = total;
 		}
 	}
+}
+
+void multiplicacionXTriangularLOMP( basetype * m1, basetype * m2, basetype *m3, int dim)
+{
+	basetype total;
+	basetype aux;
+	int i,j,k;
+# pragma omp parallel for private(i,j,k)
+	for( i=0;i<dim;i++)
+	{
+		for( j=0;j<dim;j++)
+		{
+			total=0;
+			for( k=0;k<dim;k++)
+			{
+				if(i<=j)
+				{
+					aux=m2[	k + j*(j+1)/2];
+				}
+				else aux = 0;
+				total+=m1[i*dim+k]*aux;
+			}
+			m3[i*dim+j] = total;
+		}
+	}
+}
+
+
+void multiplicacion_omp(basetype *A,basetype *B,basetype *C,int N)
+{
+	int i,j,k;
+# pragma omp parallel for private(i,j,k)
+	for(i=0;i<N;i++){ 
+		for(j=0;j<N;j++){
+			C[i*N+j]=0;
+			for(k=0;k<N;k++){
+				C[i*N+j]= C[i*N+j] + A[i*N+k]*B[k+j*N];
+			}
+		}
+	}   
 }
 
 void prodPromLU(param* parametro)
 {
-	int id = (*parametro).id;
 	int i;
 
 	// Filas que suma el thread
@@ -735,29 +676,27 @@ void prodPromLU(param* parametro)
 	int fila_inicial = id*cant_filas;
 	int fila_final = fila_inicial + cant_filas -1;
 
-	sumaL[id]=0;
-	sumaU[id]=0;
+	sumaL[omp_get_thread_num]=0;
+	sumaU[omp_get_thread_num]=0;
 
-
-	for(i=fila_inicial;i<=fila_final;i++)
+# pragma omp parallel for private(i)
+	for(i=0;i<=NT;i++)
 	{
 		//Recorre solo algunas filas
-		sumaL[id]+=UT[i];
-		sumaU[id]+=LT[i];
+		sumaL[omp_get_thread_num]+=UT[i];
+		sumaU[omp_get_thread_num]+=LT[i];
 
 	}
-	pthread_barrier_wait(&barrera); //Espera a que todas terminen
-    if(id == 0)						//si es el hilo principal
-    {
-    	for (int i = 0; i < CANT_THREADS; ++i)
-    	{
-    		promL+=sumaL[i];
-    		promU+=sumaU[i];
-    	}
-    	promL/=CANT_THREADS;
-    	promU/=CANT_THREADS;
-    	prodLU=promU*promL;
-    }
+	
+	for (int i = 0; i < omp_get_num_thread; ++i)
+	{
+		promL+=sumaL[i];
+		promU+=sumaU[i];
+	}
+	promL/=omp_get_num_thread;
+	promU/=omp_get_num_thread;
+	prodLU=promU*promL;
+    
 }
 
 basetype prodLUSEC;
@@ -777,22 +716,15 @@ void prodPromLUSECUENCIAL()
 
 }
 
-void promedioB(param* parametro)
+void promedioBOMP(param* parametro)
 {
-	int id = (*parametro).id;
 	basetype total;
 	int i,j;
-
-	// Filas que multiplica el thread
-	int cant_filas = N/CANT_THREADS;	// Cant de filas que multiplica cada thread
-	int fila_inicial = id*cant_filas;
-	int fila_final = fila_inicial + cant_filas -1;
-
 	//printf("ID: %d \t fila_inicial=%d \t fila_final=%d \n",id,fila_inicial,fila_final);
 	total=0;
 	// Multiplica A*B=C
-
-	for(i=fila_inicial;i<=fila_final;i++)
+# pragma omp parallel for private(i,j)
+	for(i=0;i<=N;i++)
 	{
 		// Recorre solo algunas filas
 		for(j=0;j<N;j++)
@@ -801,16 +733,14 @@ void promedioB(param* parametro)
 			total+=B[i*N + j];
 		}
 	}
-	sumaParcialB[id]=total;
-    pthread_barrier_wait(&barrera); //Espera a que todas terminen
-    if(id == 0)						//si es el hilo principal
-    {
-    	for (int i = 0; i < CANT_THREADS; ++i)
-    	{
-    		promB+=sumaParcialB[i];
-    	}
-    	promB /=(N*N);
-    }
+	sumaParcialB[omp_get_thread_num]=total;
+   
+	for (int i = 0; i < omp_get_num_thread; ++i)
+	{
+		promB+=sumaParcialB[i];
+	}
+   	promB /=(N*N);
+    
 }
 
 void promedioBSECUENCIAL()
@@ -846,14 +776,11 @@ void imprimir_matriz (basetype * matriz,int N){
 	}
 }
 
-void prod_escalar (param * parametro, basetype * m1, basetype a, basetype * m2)
+void prod_escalarOMP (basetype * m1, basetype a, basetype * m2, int N)
 {
-	int id = (*parametro).id;
-	int cant_filas = N/CANT_THREADS;	// Cant de filas que multiplica cada thread
-	int fila_inicial = id*cant_filas;
-	int fila_final = fila_inicial + cant_filas -1;
-
-	for (int i = fila_inicial; i < fila_final; ++i)
+	int i,j;
+# pragma omp parallel for private(i,j)
+	for (int i = 0; i < N; ++i)
 	{
 		for (int j = 0; j < N; ++j)
 		{
@@ -874,16 +801,14 @@ void prod_escalarSECUENCIAL ( basetype * m1, basetype a, basetype * m2)
 	}
 }
 
-void suma_matriz (param * parametro, basetype * m1, basetype * m2, basetype * res)
+void suma_matrizOMP (basetype * m1, basetype * m2, basetype * res,int N)
 {
-	int id = (*parametro).id;
-	int cant_filas = N/CANT_THREADS;	// Cant de filas que multiplica cada thread
-	int fila_inicial = id*cant_filas;
-	int fila_final = fila_inicial + cant_filas -1;
+	int i,j;
+# pragma omp parallel for private(i,j)
 
-	for (int i = fila_inicial; i < fila_final; ++i)
+	for ( i = 0; i < N; ++i)
 	{
-		for (int j = 0; j < N; ++j)
+		for ( j = 0; j < N; ++j)
 		{
 			res[i*N+j]	=	m1[i*N+j]	+	m2[i*N+j];
 		}
