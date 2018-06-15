@@ -1,0 +1,221 @@
+paralelos12@postgrado12:~/Distribuidos$ mpirun -np 4 -machinefile archivoMaquinas Ej1MPI 512Proceso 0, Promedio u = 2.003906 
+Proceso 1, Promedio u = 2.003906 
+Proceso 2, Promedio u = 2.003906 
+Proceso 0, Promedio l = 0.500977 
+Proceso 1, Promedio l = 0.500977 
+Proceso 3, Promedio u = 2.003906 
+Proceso 2, Promedio l = 0.500977 
+Proceso 3, Promedio l = 0.500977 
+Tiempo en segundos 0.498339 
+Tiempo en segundos 0.567046 
+Tiempo en segundos 0.613360 
+Tiempo en segundos 0.600968 
+paralelos12@postgrado12:~/Distribuidos$ mpirun -np 4 -machinefile archivoMaquinas Ej1MPI 1024
+Proceso 0, Promedio u = 2.001953 
+Proceso 2, Promedio u = 2.001953 
+Proceso 1, Promedio u = 2.001953 
+Proceso 3, Promedio u = 2.001953 
+Proceso 1, Promedio l = 0.500488 
+Proceso 0, Promedio l = 0.500488 
+Proceso 2, Promedio l = 0.500488 
+Proceso 3, Promedio l = 0.500488 
+Tiempo en segundos 3.348136 
+Tiempo en segundos 3.876155 
+Tiempo en segundos 4.262375 
+Tiempo en segundos 4.222271 
+paralelos12@postgrado12:~/Distribuidos$ mpirun -np 4 -machinefile archivoMaquinas Ej1MPI 2048
+Proceso 0, Promedio u = 2.000977 
+Proceso 2, Promedio u = 2.000977 
+Proceso 1, Promedio u = 2.000977 
+Proceso 3, Promedio u = 2.000977 
+Proceso 0, Promedio l = 0.500244 
+Proceso 1, Promedio l = 0.500244 
+Proceso 2, Promedio l = 0.500244 
+Proceso 3, Promedio l = 0.500244 
+Tiempo en segundos 25.036373 
+Tiempo en segundos 29.062002 
+Tiempo en segundos 32.280107 
+Tiempo en segundos 32.107356 
+paralelos12@postgrado12:~/Distribuidos$ mpirun -np 8 -machinefile archivoMaquinas Ej1MPI 512
+Proceso 0, Promedio u = 4.007812 
+Proceso 1, Promedio u = 4.007812 
+Proceso 2, Promedio u = 4.007812 
+Proceso 3, Promedio u = 4.007812 
+Proceso 4, Promedio u = 4.007812 
+Proceso 0, Promedio l = 0.500977 
+Proceso 2, Promedio l = 0.500977 
+Proceso 3, Promedio l = 0.500977 
+Proceso 1, Promedio l = 0.500977 
+Proceso 5, Promedio u = 4.007812 
+Proceso 6, Promedio u = 4.007812 
+Proceso 7, Promedio u = 4.007812 
+Proceso 4, Promedio l = 0.500977 
+Proceso 5, Promedio l = 0.500977 
+Proceso 6, Promedio l = 0.500977 
+Proceso 7, Promedio l = 0.500977 
+Tiempo en segundos 0.411214 
+Tiempo en segundos 0.427639 
+Tiempo en segundos 0.436245 
+Tiempo en segundos 0.456823 
+Tiempo en segundos 0.467935 
+Tiempo en segundos 0.482553 
+Tiempo en segundos 0.494211 
+Tiempo en segundos 0.481382 
+paralelos12@postgrado12:~/Distribuidos$ mpirun -np 8 -machinefile archivoMaquinas Ej1MPI 1024
+Proceso 0, Promedio u = 4.003906 
+Proceso 3, Promedio u = 4.003906 
+Proceso 4, Promedio u = 4.003906 
+Proceso 7, Promedio u = 4.003906 
+Proceso 1, Promedio u = 4.003906 
+Proceso 5, Promedio u = 4.003906 
+Proceso 2, Promedio u = 4.003906 
+Proceso 6, Promedio u = 4.003906 
+Proceso 2, Promedio l = 0.500488 
+Proceso 3, Promedio l = 0.500488 
+Proceso 0, Promedio l = 0.500488 
+Proceso 1, Promedio l = 0.500488 
+Proceso 7, Promedio l = 0.500488 
+Proceso 5, Promedio l = 0.500488 
+Proceso 4, Promedio l = 0.500488 
+Proceso 6, Promedio l = 0.500488 
+Tiempo en segundos 1.795239 
+Tiempo en segundos 1.901130 
+Tiempo en segundos 1.988862 
+Tiempo en segundos 2.159767 
+Tiempo en segundos 2.260713 
+Tiempo en segundos 2.363586 
+Tiempo en segundos 2.461458 
+Tiempo en segundos 2.417375 
+paralelos12@postgrado12:~/Distribuidos$ mpirun -np 8 -machinefile archivoMaquinas Ej1MPI 2048
+Proceso 0, Promedio u = 4.001953 
+Proceso 4, Promedio u = 4.001953 
+Proceso 3, Promedio u = 4.001953 
+Proceso 7, Promedio u = 4.001953 
+Proceso 1, Promedio u = 4.001953 
+Proceso 5, Promedio u = 4.001953 
+Proceso 2, Promedio u = 4.001953 
+Proceso 6, Promedio u = 4.001953 
+Proceso 3, Promedio l = 0.500244 
+Proceso 2, Promedio l = 0.500244 
+Proceso 1, Promedio l = 0.500244 
+Proceso 0, Promedio l = 0.500244 
+Proceso 7, Promedio l = 0.500244 
+Proceso 5, Promedio l = 0.500244 
+Proceso 4, Promedio l = 0.500244 
+Proceso 6, Promedio l = 0.500244 
+Tiempo en segundos 12.537508 
+Tiempo en segundos 13.360444 
+Tiempo en segundos 14.099051 
+Tiempo en segundos 15.411692 
+Tiempo en segundos 16.233003 
+Tiempo en segundos 17.031936 
+Tiempo en segundos 17.859667 
+Tiempo en segundos 17.687436 
+paralelos12@postgrado12:~/Distribuidos$ mpirun -np 4 Ej1MPI 512
+Proceso 0, Promedio u = 2.003906 
+Proceso 1, Promedio u = 2.003906 
+Proceso 2, Promedio u = 2.003906 
+Proceso 3, Promedio u = 2.003906 
+Proceso 0, Promedio l = 0.500977 
+Proceso 1, Promedio l = 0.500977 
+Proceso 2, Promedio l = 0.500977 
+Proceso 3, Promedio l = 0.500977 
+Tiempo en segundos 0.413699 
+Tiempo en segundos 0.462161 
+Tiempo en segundos 0.497352 
+Tiempo en segundos 0.509603 
+paralelos12@postgrado12:~/Distribuidos$ mpirun -np 4 Ej1MPI 1024
+Proceso 0, Promedio u = 2.001953 
+Proceso 1, Promedio u = 2.001953 
+Proceso 2, Promedio u = 2.001953 
+Proceso 3, Promedio u = 2.001953 
+Proceso 0, Promedio l = 0.500488 
+Proceso 1, Promedio l = 0.500488 
+Proceso 2, Promedio l = 0.500488 
+Proceso 3, Promedio l = 0.500488 
+Tiempo en segundos 3.148812 
+Tiempo en segundos 3.556123 
+Tiempo en segundos 3.889401 
+Tiempo en segundos 3.931879 
+paralelos12@postgrado12:~/Distribuidos$ mpirun -np 4 Ej1MPI 2048
+Proceso 0, Promedio u = 2.000977 
+Proceso 1, Promedio u = 2.000977 
+Proceso 2, Promedio u = 2.000977 
+Proceso 3, Promedio u = 2.000977 
+Proceso 0, Promedio l = 0.500244 
+Proceso 1, Promedio l = 0.500244 
+Proceso 2, Promedio l = 0.500244 
+Proceso 3, Promedio l = 0.500244 
+Tiempo en segundos 24.694418 
+Tiempo en segundos 27.969135 
+Tiempo en segundos 30.813745 
+Tiempo en segundos 30.985247 
+
+paralelos12@postgrado12:~/Distribuidos$ mpirun --bind-to none -np 4 Ej1h 512 4
+Tiempo en segundos paralelo 0.606509 
+Tiempo en segundos balance 0.588023 
+Tiempo en segundos paralelo 0.642814 
+Tiempo en segundos balance 0.624207 
+Tiempo en segundos paralelo 0.641059 
+Tiempo en segundos paralelo 0.652925 
+Tiempo en segundos balance 0.634612 
+Tiempo en segundos balance 0.634612 
+paralelos12@postgrado12:~/Distribuidos$ mpirun --bind-to none -np 4 Ej1h 1024 4
+Tiempo en segundos paralelo 3.999200 
+Tiempo en segundos balance 3.935104 
+Tiempo en segundos paralelo 4.118919 
+Tiempo en segundos balance 4.054754 
+Tiempo en segundos paralelo 4.282460 
+Tiempo en segundos balance 4.260016 
+Tiempo en segundos paralelo 4.324027 
+Tiempo en segundos balance 4.259920 
+paralelos12@postgrado12:~/Distribuidos$ mpirun --bind-to none -np 4 Ej1h 2048 4
+Tiempo en segundos paralelo 30.915455 
+Tiempo en segundos balance 30.669430 
+Tiempo en segundos paralelo 32.402766 
+Tiempo en segundos balance 32.156704 
+Tiempo en segundos paralelo 33.826157 
+Tiempo en segundos balance 33.755411 
+Tiempo en segundos paralelo 34.001384 
+Tiempo en segundos balance 33.755321 
+paralelos12@postgrado12:~/Distribuidos$ mpirun --bind-to none -np 4 -machinefile archivoMaquinas Ej1h 512 4
+Tiempo en segundos paralelo 0.602579 
+Tiempo en segundos balance 0.583339 
+Tiempo en segundos paralelo 0.632251 
+Tiempo en segundos balance 0.612856 
+Tiempo en segundos paralelo 0.643958 
+Tiempo en segundos balance 0.637237 
+Tiempo en segundos paralelo 0.656399 
+Tiempo en segundos balance 0.637236 
+paralelos12@postgrado12:~/Distribuidos$ mpirun --bind-to none -np 4 -machinefile archivoMaquinas Ej1h 1024 4
+Tiempo en segundos paralelo 3.957697 
+Tiempo en segundos balance 3.889961 
+Tiempo en segundos paralelo 4.247011 
+Tiempo en segundos balance 4.179215 
+Tiempo en segundos paralelo 4.328085 
+Tiempo en segundos balance 4.304563 
+Tiempo en segundos paralelo 4.372249 
+Tiempo en segundos balance 4.304461 
+paralelos12@postgrado12:~/Distribuidos$ mpirun --bind-to none -np 4 -machinefile archivoMaquinas Ej1h 2048 4
+Tiempo en segundos paralelo 29.876833 
+Tiempo en segundos balance 29.629048 
+Tiempo en segundos paralelo 32.527020 
+Tiempo en segundos balance 32.279159 
+Tiempo en segundos paralelo 34.208594 
+Tiempo en segundos balance 34.136340 
+Tiempo en segundos paralelo 34.384199 
+Tiempo en segundos balance 34.136248 
+
+
+paralelos12@postgrado12:~/Distribuidos$ ./Ej1SEC 512
+Fin Inicializacion
+Tiempo en segundos 2.067393 
+paralelos12@postgrado12:~/Distribuidos$ ./Ej1SEC 1024
+Fin Inicializacion
+Tiempo en segundos 46.889662 
+paralelos12@postgrado12:~/Distribuidos$ ./Ej1SEC 512
+Fin Inicializacion
+paralelos12@postgrado12:~/Distribuidos$ ./Ej1SEC 2048
+Fin Inicializacion
+Tiempo en segundos 403.322483 
+
