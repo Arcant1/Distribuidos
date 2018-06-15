@@ -5,20 +5,9 @@
 #include <sys/time.h>
 #include "mpi.h"
 
-#ifdef _INT_
-typedef int basetype;     // Tipo para elementos: int
-#define tipo_dato   "ints"
-#elif _DOUBLE_
-typedef float basetype;  // Tipo para elementos: basetype
-#define tipo_dato    "basetypes"
-#else
-typedef double basetype;   // Tipo para elementos: float     PREDETERMINADO
-#define tipo_dato    "floats"
-#endif
-
 //Para calcular tiempo
 double dwalltime(){
-        basetype sec;
+        double sec;
         struct timeval tv;
 
         gettimeofday(&tv,NULL);
@@ -26,32 +15,18 @@ double dwalltime(){
         return sec;
 }
 
-
-void multiplicacionXTriangularUSECUENCIAL(basetype * m1, basetype * m2, basetype *m3, int N, int NT);
-
-void multiplicacionXTriangularLSECUENCIAL( basetype * m1, basetype * m2, basetype *m3, int N,int NT);
-
-void imprimir_matriz (basetype * matriz,int N);
-
-basetype * prod_escalarSECUENCIAL ( basetype * m1, basetype a,int N);
-
-basetype * multiplicacion_secuencial(basetype *A,basetype *B,int N);
-
-basetype* suma_matrizSECUENCIAL ( basetype * m1, basetype * m2,int N);
-
 int main(int argc, char** argv){
 
-	int miID; 
-	int cantidadDeProcesos;
+	int miID; int cantidadDeProcesos;
 	int N; // Dimension de la matriz
 	int sizeMatrix; // Cantidad total de datos matriz 	
-	int sizePart,sizePartLU; // Cantidad de elementos por proceso
-	//basetype *A_buf, *D_buf,*ab_temp,*de_temp,*abc_temp,*def_temp;
-	//basetype *A,*B,*C,*D,*E,*F,*M;
-	basetype *A_buf, *D_buf,*ab_temp,*LT_temp,*UT_temp,*LC_temp,*DU_temp;
-	basetype *A,*B,*C,*D,*L,*U, *LT,*UT,*M;
-	basetype uu=1.0f,ll=2.0f,escalar;
-	basetype timetick;
+	int sizePart; // Cantidad de elementos por proceso
+	int sizeTrian;
+	double *A_buf, *L_buf, *D_buf,*ab_temp,*lc_temp,*du_temp;
+	double *A,*B,*C,*D,*L,*U,*M;
+	double u=0.0,l=0.0;
+	double tiempo_paral;
+
 
 	MPI_Init(&argc, &argv);
 	MPI_Comm_rank(MPI_COMM_WORLD,&miID);
@@ -65,261 +40,158 @@ int main(int argc, char** argv){
 	}
 
 	N = atoi(argv[1]);
- 	basetype NT = (N*(N+1))/2;
  	sizeMatrix=N*N; // Cantidad total de datos matriz
  	sizePart=sizeMatrix/cantidadDeProcesos; // Cantidad de elementos por bloque x Cantidad de bloques por proceso 	
- 	sizePartLU = NT/cantidadDeProcesos;
- 	
-	
-	ab_temp=(basetype*)malloc(sizeof(basetype)*sizePart);
-	LC_temp=(basetype*)malloc(sizeof(basetype)*sizePartLU);
-	DU_temp=(basetype*)malloc(sizeof(basetype)*sizePartLU);
-	
-	
-	if(miID==0) 
-	{ // El proceso con ID=0 inicializa y distribuye los datos
-	
-		A=(basetype*)malloc(sizeof(basetype)*sizeMatrix);
-		B=(basetype*)malloc(sizeof(basetype)*sizeMatrix);
-		C=(basetype*)malloc(sizeof(basetype)*sizeMatrix);
-		L=(basetype*)malloc(sizeof(basetype)*sizeMatrix);
-		U=(basetype*)malloc(sizeof(basetype)*sizeMatrix);
-		LT=(basetype*)malloc(sizeof(basetype)*NT);
-		UT=(basetype*)malloc(sizeof(basetype)*NT);
-		D=(basetype*)malloc(sizeof(basetype)*sizeMatrix);
-		M=(basetype*)malloc(sizeof(basetype)*sizeMatrix);
+	sizeTrian = (N+1)*N/2;
+	int posicion = (N/cantidadDeProcesos)*miID;
 
-		for(int i=0 ;i<sizeMatrix;i++) { // Inicializa las matrices A y B en 1, el resultado sera una matriz con todos sus valores en N
-			A[i]=1.0;
-			B[i]=1.0;
-			C[i]=1.0;
-			D[i]=1.0;
-			L[i]=1.0;
-			U[i]=1.0;
-	  	} //end i
-	  	int indice;
-		for (int i = 0; i < N; ++i)
-		{
-			for (int j = 0; j < N; ++j)
-			{
-				indice = N * i + j - ((i *(i+1))/2);
-				UT[indice]	= U[i*N + j];
+	A_buf=(double*)malloc(sizeof(double)*sizePart);
+	L_buf=(double*)malloc(sizeof(double)*sizePart);
+	D_buf=(double*)malloc(sizeof(double)*sizePart);
 
-				indice = N * j + i - ((j *(j+1))/2);
-				LT[indice] = L[i*N+j];			
+	ab_temp=(double*)malloc(sizeof(double)*sizePart);
+	lc_temp=(double*)malloc(sizeof(double)*sizePart);
+	du_temp=(double*)malloc(sizeof(double)*sizePart);
+	
+	B=(double*)malloc(sizeof(double)*sizeMatrix);
+	C=(double*)malloc(sizeof(double)*sizeMatrix);
+	U=(double*)malloc(sizeof(double)*sizeTrian);     
+	
+	if(miID==0) { // El proceso con ID=0 inicializa y distribuye los datos
+	
+		A=(double*)malloc(sizeof(double)*sizeMatrix);
+		L=(double*)malloc(sizeof(double)*sizeMatrix);
+		D=(double*)malloc(sizeof(double)*sizeMatrix);
+		M=(double*)malloc(sizeof(double)*sizeMatrix);
+		for(int i=0;i<sizeTrian;i++){U[i]=0;}
+  	for(int i=0;i<N;i++){
+   		for(int j=0;j<N;j++){
+   			//Ordenadas por "fila"
+     			A[i*N+j]=1;
+     			D[i*N+j]=1;
+     			//inicializa una matriz triangular inferior
+   			if(i>=j){
+   				L[i*N+j]=1;
+			}else{
+				L[i*N+j]=0;	
 			}
-		}
+     			//Ordenadas por "columna"
+     			B[i+N*j]=1;
+     			C[i+N*j]=1;
+   			//inicializa una matriz triangular superior
+	   		U[i+j*(j+1)/2]=1;
+   		}
+ 		}
 	}
-	
 
-	timetick = dwalltime();
-
-	//*********Promedio L**********
-
-	// Buffer para la Matriz LT
-  	// Distribuye los elementos de la matriz L
-  	MPI_Scatter(LT,sizePart,MPI_DOUBLE,LT_temp,sizePart,MPI_DOUBLE,0,MPI_COMM_WORLD);
-	// Promedio de B
-	basetype temp=0;
-
-	for(int i=0;i<sizePartLU;i++)
-		temp+=LT_temp[i];
-
-	temp/=sizeMatrix;
-
-	MPI_Allreduce(&temp, &ll, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD); 		
-
-	
-	//////////////////////////////////////////////////////////////////////
-
-	//*********Promedio U**********
-
-	// Buffer para la Matriz UT
-  	// Distribuye los elementos de la matriz L
-  	MPI_Scatter(UT,sizePart,MPI_DOUBLE,UT_temp,sizePart,MPI_DOUBLE,0,MPI_COMM_WORLD);
-	// Promedio de B
-	temp=0;
-
-	for(int i=0;i<sizePartLU;i++)
-		temp+=UT_temp[i];
-
-	temp/=sizeMatrix;
-
-	MPI_Allreduce(&temp, &uu, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD); 		
-
-	
-	///////////////////////////////////////////////////////////////////////////////
-
+ 	tiempo_paral = dwalltime();
 
 	MPI_Scatter(A,sizePart,MPI_DOUBLE,A_buf,sizePart,MPI_DOUBLE,0,MPI_COMM_WORLD);
 
 	MPI_Bcast(B, sizeMatrix, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+	MPI_Scatter(L,sizePart,MPI_DOUBLE,L_buf,sizePart,MPI_DOUBLE,0,MPI_COMM_WORLD);
+
 	MPI_Bcast(C, sizeMatrix, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
 	MPI_Scatter(D,sizePart,MPI_DOUBLE,D_buf,sizePart,MPI_DOUBLE,0,MPI_COMM_WORLD);
 
-	escalar = uu*ll;
+	MPI_Bcast(U, sizeTrian, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-	ab_temp = multiplicacion_secuencial(A,B,sizePart);				//AB
-	//multiplicacionXTriangularUSECUENCIAL(D,UT,DU_temp,sizePart);	//DU
-	//multiplicacionXTriangularLSECUENCIAL(C,LT,LC_temp,sizePart);	//CL
-	DU_temp = multiplicacion_secuencial(D,U,sizePart);
-	LC_temp = multiplicacion_secuencial(C,L,sizePart);
-	ab_temp = suma_matrizSECUENCIAL(ab_temp,LC_temp,sizePart);
-	ab_temp = suma_matrizSECUENCIAL(ab_temp,DU_temp,sizePart);
-	ab_temp = prod_escalarSECUENCIAL(ab_temp,escalar,sizePart);
+	// Promedio de U
+	double temp=0;
 
-													//
+	for(int i=0;i<sizeTrian;i++)
+		temp+=U[i];
+
+	temp/=sizeMatrix;	
+
+	MPI_Allreduce(&temp, &u, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+
+	printf("Proceso %d, Promedio u = %lf \n",miID,u);
+
+	// Promedio de L
+	temp=0;
+
+	for(int i=0;i<sizePart/N;i++){
+		for (int j = 0; j < i+posicion+1; j++){
+			temp+=L_buf[i*N+j];
+		}
+	}
+
+	temp/=sizeMatrix;
+
+	MPI_Allreduce(&temp, &l, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+
+	printf("Proceso %d, Promedio l = %lf \n",miID,l);
+
+//--------------------------------------------------------
+	for(int i=0;i<sizePart/N;i++){
+		for(int j=0;j<N;j++){
+			ab_temp[i*N+j]=0;
+			for(int k=0;k<N;k++){
+				ab_temp[i*N+j]= ab_temp[i*N+j] + A_buf[i*N+k]*B[k+j*N];
+			}
+		}
+	}
+
+	for (int i=0;i<sizePart;i++){
+		ab_temp[i]*=u*l;
+	}
+
+	for(int i=0;i<sizePart/N;i++){
+		for(int j=0;j<N;j++){
+			lc_temp[i*N+j]=0;
+			for(int k=0;k<posicion+i+1;k++){
+				lc_temp[i*N+j]= lc_temp[i*N+j] + L_buf[i*N+k]*C[k+j*N];
+			}
+		}
+	}
+
+	for (int i=0;i<sizePart;i++){
+		lc_temp[i]*=u*l;
+	}
+
+	for(int i=0;i<sizePart/N;i++){
+		for(int j=0;j<N;j++){
+			du_temp[i*N+j]=0;
+			for(int k=0;k<j+1;k++){
+				du_temp[i*N+j]= du_temp[i*N+j] + D_buf[i*N+k]*U[k+j*(j+1)/2];
+			}
+		}
+	}
+
+	for (int i=0;i<sizePart;i++){
+		du_temp[i]*=u*l;
+	}
+
+	for (int i=0;i<sizePart;i++){
+		ab_temp[i]+=lc_temp[i]+du_temp[i];
+	}
+
 	MPI_Gather(ab_temp, sizePart, MPI_DOUBLE, M, sizePart, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-	printf("Tiempo en segundos %f \n", dwalltime() - timetick);
-
-	/*if(miID==0){
-		for (int j=0; j<N; j++){
-			for (int i=0; i<N; i++){
-				printf ("%lf \t",M[j*N+i]);
-			}
-			printf ("\n");
-		}
-	}*/
+	tiempo_paral = dwalltime() - tiempo_paral;
+	printf("Tiempo en segundos %f \n", tiempo_paral);
 
 	//***** FIN PROGRAMA ****
 	
+	free(B);
+	free(C);
+	free(U);
 	free(ab_temp);
-
+	free(lc_temp);
+	free(du_temp);
+	free(A_buf);
+	free(L_buf);
+	free(D_buf);
 	if(miID==0){
-		free(M);
 		free(A);
-		free(B);
-		free(C);
 		free(L);
-		free(U);
-		free(LT);
-		free(UT);
 		free(D);
+		free(M);		
 	}
-
 	MPI_Finalize();
-
 	return(0);
 }
 
-
-
-
-void multiplicacionXTriangularUSECUENCIAL(basetype * m1, basetype * m2, basetype *m3, int N,int NT)
-{
-	basetype aux;
-	basetype total;
-	for(int i=0;i<N;i++)
-	{
-		//Recorre solo algunas filas
-		for(int j=0;j<N;j++)
-		{
-			//Recorre todas las columnas
-			total=0;
-			for(int k=0;k<NT;k++)
-			{
-				if(i>=j)
-				{
-					aux=m2[	j + k*(k+1)/2];
-
-				}
-				else aux = 0;
-				total+=m1[i*N+k]*aux;
-			}
-			m3[i*N+j] = total;
-		}
-	}
-}
-
-void multiplicacionXTriangularLSECUENCIAL( basetype * m1, basetype * m2, basetype *m3, int N,int NT)
-{
-	basetype total;
-	basetype aux;
-	for(int i=0;i<N;i++)
-	{
-		// Recorre solo algunas filas
-		for(int j=0;j<N;j++)
-		{
-			// Recorre todas las columnas
-			total=0;
-			for(int k=0;k<NT;k++)
-			{
-				if(i<=j)
-				{
-					aux=m2[	k + j*(j+1)/2];
-				}
-				else aux = 0;
-				total+=m1[i*N+k]*aux;
-			}
-			m3[i*N+j] = total;
-		}
-	}
-}
-
-// --------------------------
-// -- FUNCIONES AUXILIARES //
-// --------------------------
-
-void imprimir_matriz (basetype * matriz,int N){
-
-	for (int i=0;i<N;i++){
-		for (int j = 0 ; j < N ; j++){
-			printf ("%.1f\t",matriz [ i * N + j ]);
-		}
-		printf("\n");
-	}
-}
-
-
-basetype * prod_escalarSECUENCIAL ( basetype * m1, basetype a,int N)
-{
-	basetype * C=(basetype*)malloc(sizeof(basetype)*N*N);
-
-	for (int i = 0; i < N; ++i)
-	{
-		for (int j = 0; j < N; ++j)
-		{
-			C[i*N+j]=m1[i*N+j]*a;
-		}
-	}
-	return C;
-}
-
-
-basetype * multiplicacion_secuencial(basetype *A,basetype *B,int N)
-{
-	//printf("Comienzo etapa 1\n");
-	basetype * C=(basetype*)malloc(sizeof(basetype)*N*N);
-	basetype total;
-	int i,j,k;
-
-	// Multiplica A*B*D=C
-	for(i=0;i<N;i++){
-		for(j=0;j<N;j++)
-		{
-			total=0;
-			for(k=0;k<N;k++)
-			{
-				total+=A[i*N+k]*B[k*N+j];	// total=A*B
-			}
-			C[i*N+j] = total;		// C=total
-		}
-	}
-	return C;
-}
-
-
-basetype * suma_matrizSECUENCIAL ( basetype * m1, basetype * m2,int N)
-{
-	basetype * res = (basetype*)malloc(sizeof(basetype)*N*N);
-	for (int i = 0; i < N; ++i)
-	{
-		for (int j = 0; j < N; ++j)
-		{
-			res[i*N+j]	=	m1[i*N+j]	+	m2[i*N+j];
-		}
-	}
-	return res;
-}

@@ -146,27 +146,27 @@ int main(int argc, char** argv){
 
 	
 
-	printf("Inicio...\n");
+
 	ab_temp= multiplicacion_secuencial(A,B,N);				//AB
-	printf("Fin Etapa 1\n");
+
 
 	//multiplicacionXTriangularUSECUENCIAL(D,UT,DU_temp,N,NT);	//DU
 	DU_temp= multiplicacion_secuencial(D,U,N);				
-	printf("Fin Etapa 2\n");
+
 
 	//multiplicacionXTriangularLSECUENCIAL(C,LT,LC_temp,N,NT);	//CL
 	LC_temp=multiplicacion_secuencial(C,L,N);				
-	printf("Fin Etapa 3\n");
+
 
 	ab_temp = suma_matrizSECUENCIAL(ab_temp,LC_temp,N);
-	printf("Fin Etapa 4\n");
+
 
 	ab_temp = suma_matrizSECUENCIAL(ab_temp,DU_temp,N);
-	printf("Fin Etapa 5\n");
+
 
 
 	ab_temp= prod_escalarSECUENCIAL(ab_temp,escalar,N);
-	printf("Fin Etapa 6\n");
+
 											//
 
 	printf("Tiempo en segundos %f \n", dwalltime() - timetick);
