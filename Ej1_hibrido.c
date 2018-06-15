@@ -4,6 +4,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include "mpi.h"
+#include <omp.h>
 
 #ifdef _INT_
 typedef int basetype;     // Tipo para elementos: int
@@ -46,6 +47,7 @@ int main(int argc, char** argv){
 	int N; // Dimension de la matriz
 	int sizeMatrix; // Cantidad total de datos matriz 	
 	int sizePart,sizePartLU; // Cantidad de elementos por proceso
+	int i,j,k;
 	//basetype *A_buf, *D_buf,*ab_temp,*de_temp,*abc_temp,*def_temp;
 	//basetype *A,*B,*C,*D,*E,*F,*M;
 	basetype *A_buf, *D_buf,*ab_temp,*LT_temp,*UT_temp,*LC_temp,*DU_temp;
@@ -89,18 +91,25 @@ int main(int argc, char** argv){
 		D=(basetype*)malloc(sizeof(basetype)*sizeMatrix);
 		M=(basetype*)malloc(sizeof(basetype)*sizeMatrix);
 
-		for(int i=0 ;i<sizeMatrix;i++) { // Inicializa las matrices A y B en 1, el resultado sera una matriz con todos sus valores en N
-			A[i]=1.0;
-			B[i]=1.0;
-			C[i]=1.0;
-			D[i]=1.0;
-			L[i]=1.0;
-			U[i]=1.0;
-	  	} //end i
-	  	int indice;
-		for (int i = 0; i < N; ++i)
+		# pragma omp parallel for private(i,j)
+		for ( i = 0; i < N; ++i)
 		{
-			for (int j = 0; j < N; ++j)
+			for ( j = 0; i < N; ++i)
+			{
+				A[i*N+j]=1.0;
+				B[i*N+j]=1.0;
+				C[i*N+j]=1.0;
+				D[i*N+j]=1.0;
+				L[i*N+j]=1.0;
+				U[i*N+j]=1.0;
+			}
+		}
+	
+	  	int indice;
+		# pragma omp parallel for private(i,j)
+		for ( i = 0; i < N; ++i)
+		{
+			for ( j = 0; j < N; ++j)
 			{
 				indice = N * i + j - ((i *(i+1))/2);
 				UT[indice]	= U[i*N + j];
@@ -122,7 +131,7 @@ int main(int argc, char** argv){
 	// Promedio de B
 	basetype temp=0;
 
-	for(int i=0;i<sizePartLU;i++)
+	for(int i=0;i<sizePart;i++)
 		temp+=LT_temp[i];
 
 	temp/=sizeMatrix;
@@ -211,6 +220,7 @@ void multiplicacionXTriangularUSECUENCIAL(basetype * m1, basetype * m2, basetype
 {
 	basetype aux;
 	basetype total;
+
 	for(int i=0;i<N;i++)
 	{
 		//Recorre solo algunas filas
@@ -296,6 +306,7 @@ basetype * multiplicacion_secuencial(basetype *A,basetype *B,int N)
 	int i,j,k;
 
 	// Multiplica A*B*D=C
+	#pragma omp parallel for schedule(auto) private(i,j,k)
 	for(i=0;i<N;i++){
 		for(j=0;j<N;j++)
 		{
@@ -314,9 +325,11 @@ basetype * multiplicacion_secuencial(basetype *A,basetype *B,int N)
 basetype * suma_matrizSECUENCIAL ( basetype * m1, basetype * m2,int N)
 {
 	basetype * res = (basetype*)malloc(sizeof(basetype)*N*N);
-	for (int i = 0; i < N; ++i)
+	int i,j;
+	#pragma omp parallel for schedule(auto) private(i,j)
+	for ( i = 0; i < N; ++i)
 	{
-		for (int j = 0; j < N; ++j)
+		for ( j = 0; j < N; ++j)
 		{
 			res[i*N+j]	=	m1[i*N+j]	+	m2[i*N+j];
 		}
