@@ -17,20 +17,20 @@ double dwalltime(){
 
 int main(int argc, char** argv){
 
-	int miID; int cantidadDeProcesos;
+	int miID; int cantProcesos;
 	int N; // Dimension de la matriz
-	int sizeMatrix; // Cantidad total de datos matriz 	
-	int sizePart; // Cantidad de elementos por proceso
+	int dim; // Cantidad total de datos matriz 	
+	int buf; // Cantidad de elementos por proceso
 	int sizeTrian;
 	double *A_buf, *L_buf, *D_buf,*ab_temp,*lc_temp,*du_temp;
 	double *A,*B,*C,*D,*L,*U,*M;
 	double u=0.0,l=0.0;
-	double tiempo_paral;
+	double t_p;
 
 
 	MPI_Init(&argc, &argv);
 	MPI_Comm_rank(MPI_COMM_WORLD,&miID);
-	MPI_Comm_size(MPI_COMM_WORLD,&cantidadDeProcesos);
+	MPI_Comm_size(MPI_COMM_WORLD,&cantProcesos);
 
 	/***** PROGRAMA *****/
 	if (argc < 2){
@@ -40,29 +40,29 @@ int main(int argc, char** argv){
 	}
 
 	N = atoi(argv[1]);
- 	sizeMatrix=N*N; // Cantidad total de datos matriz
- 	sizePart=sizeMatrix/cantidadDeProcesos; // Cantidad de elementos por bloque x Cantidad de bloques por proceso 	
+ 	dim=N*N; // Cantidad total de datos matriz
+ 	buf=dim/cantProcesos; // Cantidad de elementos por bloque x Cantidad de bloques por proceso 	
 	sizeTrian = (N+1)*N/2;
-	int posicion = (N/cantidadDeProcesos)*miID;
+	int posicion = (N/cantProcesos)*miID;
 
-	A_buf=(double*)malloc(sizeof(double)*sizePart);
-	L_buf=(double*)malloc(sizeof(double)*sizePart);
-	D_buf=(double*)malloc(sizeof(double)*sizePart);
+	A_buf=(double*)malloc(sizeof(double)*buf);
+	L_buf=(double*)malloc(sizeof(double)*buf);
+	D_buf=(double*)malloc(sizeof(double)*buf);
 
-	ab_temp=(double*)malloc(sizeof(double)*sizePart);
-	lc_temp=(double*)malloc(sizeof(double)*sizePart);
-	du_temp=(double*)malloc(sizeof(double)*sizePart);
+	ab_temp=(double*)malloc(sizeof(double)*buf);
+	lc_temp=(double*)malloc(sizeof(double)*buf);
+	du_temp=(double*)malloc(sizeof(double)*buf);
 	
-	B=(double*)malloc(sizeof(double)*sizeMatrix);
-	C=(double*)malloc(sizeof(double)*sizeMatrix);
+	B=(double*)malloc(sizeof(double)*dim);
+	C=(double*)malloc(sizeof(double)*dim);
 	U=(double*)malloc(sizeof(double)*sizeTrian);     
 	
 	if(miID==0) { // El proceso con ID=0 inicializa y distribuye los datos
 	
-		A=(double*)malloc(sizeof(double)*sizeMatrix);
-		L=(double*)malloc(sizeof(double)*sizeMatrix);
-		D=(double*)malloc(sizeof(double)*sizeMatrix);
-		M=(double*)malloc(sizeof(double)*sizeMatrix);
+		A=(double*)malloc(sizeof(double)*dim);
+		L=(double*)malloc(sizeof(double)*dim);
+		D=(double*)malloc(sizeof(double)*dim);
+		M=(double*)malloc(sizeof(double)*dim);
 		for(int i=0;i<sizeTrian;i++){U[i]=0;}
   	for(int i=0;i<N;i++){
    		for(int j=0;j<N;j++){
@@ -84,17 +84,17 @@ int main(int argc, char** argv){
  		}
 	}
 
- 	tiempo_paral = dwalltime();
+ 	t_p = dwalltime();
 
-	MPI_Scatter(A,sizePart,MPI_DOUBLE,A_buf,sizePart,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Scatter(A,buf,MPI_DOUBLE,A_buf,buf,MPI_DOUBLE,0,MPI_COMM_WORLD);
 
-	MPI_Bcast(B, sizeMatrix, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Bcast(B, dim, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-	MPI_Scatter(L,sizePart,MPI_DOUBLE,L_buf,sizePart,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Scatter(L,buf,MPI_DOUBLE,L_buf,buf,MPI_DOUBLE,0,MPI_COMM_WORLD);
 
-	MPI_Bcast(C, sizeMatrix, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Bcast(C, dim, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-	MPI_Scatter(D,sizePart,MPI_DOUBLE,D_buf,sizePart,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Scatter(D,buf,MPI_DOUBLE,D_buf,buf,MPI_DOUBLE,0,MPI_COMM_WORLD);
 
 	MPI_Bcast(U, sizeTrian, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
@@ -104,7 +104,7 @@ int main(int argc, char** argv){
 	for(int i=0;i<sizeTrian;i++)
 		temp+=U[i];
 
-	temp/=sizeMatrix;	
+	temp/=dim;	
 
 	MPI_Allreduce(&temp, &u, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
@@ -113,20 +113,20 @@ int main(int argc, char** argv){
 	// Promedio de L
 	temp=0;
 
-	for(int i=0;i<sizePart/N;i++){
+	for(int i=0;i<buf/N;i++){
 		for (int j = 0; j < i+posicion+1; j++){
 			temp+=L_buf[i*N+j];
 		}
 	}
 
-	temp/=sizeMatrix;
+	temp/=dim;
 
 	MPI_Allreduce(&temp, &l, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
 	printf("Proceso %d, Promedio l = %lf \n",miID,l);
 
 //--------------------------------------------------------
-	for(int i=0;i<sizePart/N;i++){
+	for(int i=0;i<buf/N;i++){
 		for(int j=0;j<N;j++){
 			ab_temp[i*N+j]=0;
 			for(int k=0;k<N;k++){
@@ -135,11 +135,11 @@ int main(int argc, char** argv){
 		}
 	}
 
-	for (int i=0;i<sizePart;i++){
+	for (int i=0;i<buf;i++){
 		ab_temp[i]*=u*l;
 	}
 
-	for(int i=0;i<sizePart/N;i++){
+	for(int i=0;i<buf/N;i++){
 		for(int j=0;j<N;j++){
 			lc_temp[i*N+j]=0;
 			for(int k=0;k<posicion+i+1;k++){
@@ -148,11 +148,11 @@ int main(int argc, char** argv){
 		}
 	}
 
-	for (int i=0;i<sizePart;i++){
+	for (int i=0;i<buf;i++){
 		lc_temp[i]*=u*l;
 	}
 
-	for(int i=0;i<sizePart/N;i++){
+	for(int i=0;i<buf/N;i++){
 		for(int j=0;j<N;j++){
 			du_temp[i*N+j]=0;
 			for(int k=0;k<j+1;k++){
@@ -161,20 +161,19 @@ int main(int argc, char** argv){
 		}
 	}
 
-	for (int i=0;i<sizePart;i++){
+	for (int i=0;i<buf;i++){
 		du_temp[i]*=u*l;
 	}
 
-	for (int i=0;i<sizePart;i++){
+	for (int i=0;i<buf;i++){
 		ab_temp[i]+=lc_temp[i]+du_temp[i];
 	}
 
-	MPI_Gather(ab_temp, sizePart, MPI_DOUBLE, M, sizePart, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Gather(ab_temp, buf, MPI_DOUBLE, M, buf, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-	tiempo_paral = dwalltime() - tiempo_paral;
-	printf("Tiempo en segundos %f \n", tiempo_paral);
+	t_p = dwalltime() - t_p;
+	printf("Tiempo en segundos %f \n", t_p);
 
-	//***** FIN PROGRAMA ****
 	
 	free(B);
 	free(C);
