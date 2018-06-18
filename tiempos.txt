@@ -10,6 +10,9 @@ Tiempo en segundos 0.498339
 Tiempo en segundos 0.567046 
 Tiempo en segundos 0.613360 
 Tiempo en segundos 0.600968 
+
+D=0.22
+
 paralelos12@postgrado12:~/Distribuidos$ mpirun -np 4 -machinefile archivoMaquinas Ej1MPI 1024
 Proceso 0, Promedio u = 2.001953 
 Proceso 2, Promedio u = 2.001953 
@@ -23,6 +26,10 @@ Tiempo en segundos 3.348136
 Tiempo en segundos 3.876155 
 Tiempo en segundos 4.262375 
 Tiempo en segundos 4.222271 
+
+D=0.23
+
+
 paralelos12@postgrado12:~/Distribuidos$ mpirun -np 4 -machinefile archivoMaquinas Ej1MPI 2048
 Proceso 0, Promedio u = 2.000977 
 Proceso 2, Promedio u = 2.000977 
@@ -36,6 +43,10 @@ Tiempo en segundos 25.036373
 Tiempo en segundos 29.062002 
 Tiempo en segundos 32.280107 
 Tiempo en segundos 32.107356 
+
+D=0.244
+
+
 paralelos12@postgrado12:~/Distribuidos$ mpirun -np 8 -machinefile archivoMaquinas Ej1MPI 512
 Proceso 0, Promedio u = 4.007812 
 Proceso 1, Promedio u = 4.007812 
@@ -61,6 +72,10 @@ Tiempo en segundos 0.467935
 Tiempo en segundos 0.482553 
 Tiempo en segundos 0.494211 
 Tiempo en segundos 0.481382 
+
+D=0.18
+
+
 paralelos12@postgrado12:~/Distribuidos$ mpirun -np 8 -machinefile archivoMaquinas Ej1MPI 1024
 Proceso 0, Promedio u = 4.003906 
 Proceso 3, Promedio u = 4.003906 
@@ -86,6 +101,10 @@ Tiempo en segundos 2.260713
 Tiempo en segundos 2.363586 
 Tiempo en segundos 2.461458 
 Tiempo en segundos 2.417375 
+
+prom = 2.1637
+D=0.30%
+
 paralelos12@postgrado12:~/Distribuidos$ mpirun -np 8 -machinefile archivoMaquinas Ej1MPI 2048
 Proceso 0, Promedio u = 4.001953 
 Proceso 4, Promedio u = 4.001953 
@@ -111,6 +130,10 @@ Tiempo en segundos 16.233003
 Tiempo en segundos 17.031936 
 Tiempo en segundos 17.859667 
 Tiempo en segundos 17.687436 
+
+prom=15.5225
+D=0.34
+
 paralelos12@postgrado12:~/Distribuidos$ mpirun -np 4 Ej1MPI 512
 Proceso 0, Promedio u = 2.003906 
 Proceso 1, Promedio u = 2.003906 
@@ -120,10 +143,17 @@ Proceso 0, Promedio l = 0.500977
 Proceso 1, Promedio l = 0.500977 
 Proceso 2, Promedio l = 0.500977 
 Proceso 3, Promedio l = 0.500977 
+
 Tiempo en segundos 0.413699 
 Tiempo en segundos 0.462161 
 Tiempo en segundos 0.497352 
 Tiempo en segundos 0.509603 
+
+
+prom = .465
+D=0.20
+
+
 paralelos12@postgrado12:~/Distribuidos$ mpirun -np 4 Ej1MPI 1024
 Proceso 0, Promedio u = 2.001953 
 Proceso 1, Promedio u = 2.001953 
@@ -133,10 +163,15 @@ Proceso 0, Promedio l = 0.500488
 Proceso 1, Promedio l = 0.500488 
 Proceso 2, Promedio l = 0.500488 
 Proceso 3, Promedio l = 0.500488 
+
 Tiempo en segundos 3.148812 
 Tiempo en segundos 3.556123 
 Tiempo en segundos 3.889401 
 Tiempo en segundos 3.931879 
+
+
+D=0.21
+
 paralelos12@postgrado12:~/Distribuidos$ mpirun -np 4 Ej1MPI 2048
 Proceso 0, Promedio u = 2.000977 
 Proceso 1, Promedio u = 2.000977 
@@ -146,10 +181,14 @@ Proceso 0, Promedio l = 0.500244
 Proceso 1, Promedio l = 0.500244 
 Proceso 2, Promedio l = 0.500244 
 Proceso 3, Promedio l = 0.500244 
+
 Tiempo en segundos 24.694418 
 Tiempo en segundos 27.969135 
 Tiempo en segundos 30.813745 
 Tiempo en segundos 30.985247 
+
+prom=28.61
+D=0.219
 
 paralelos12@postgrado12:~/Distribuidos$ mpirun --bind-to none -np 4 Ej1h 512 4
 Tiempo en segundos paralelo 0.606509 
@@ -160,6 +199,9 @@ Tiempo en segundos paralelo 0.641059
 Tiempo en segundos paralelo 0.652925 
 Tiempo en segundos balance 0.634612 
 Tiempo en segundos balance 0.634612 
+
+
+
 paralelos12@postgrado12:~/Distribuidos$ mpirun --bind-to none -np 4 Ej1h 1024 4
 Tiempo en segundos paralelo 3.999200 
 Tiempo en segundos balance 3.935104 
@@ -169,6 +211,8 @@ Tiempo en segundos paralelo 4.282460
 Tiempo en segundos balance 4.260016 
 Tiempo en segundos paralelo 4.324027 
 Tiempo en segundos balance 4.259920 
+
+
 paralelos12@postgrado12:~/Distribuidos$ mpirun --bind-to none -np 4 Ej1h 2048 4
 Tiempo en segundos paralelo 30.915455 
 Tiempo en segundos balance 30.669430 
@@ -178,6 +222,8 @@ Tiempo en segundos paralelo 33.826157
 Tiempo en segundos balance 33.755411 
 Tiempo en segundos paralelo 34.001384 
 Tiempo en segundos balance 33.755321 
+
+
 paralelos12@postgrado12:~/Distribuidos$ mpirun --bind-to none -np 4 -machinefile archivoMaquinas Ej1h 512 4
 Tiempo en segundos paralelo 0.602579 
 Tiempo en segundos balance 0.583339 
@@ -187,6 +233,8 @@ Tiempo en segundos paralelo 0.643958
 Tiempo en segundos balance 0.637237 
 Tiempo en segundos paralelo 0.656399 
 Tiempo en segundos balance 0.637236 
+
+
 paralelos12@postgrado12:~/Distribuidos$ mpirun --bind-to none -np 4 -machinefile archivoMaquinas Ej1h 1024 4
 Tiempo en segundos paralelo 3.957697 
 Tiempo en segundos balance 3.889961 
@@ -196,6 +244,8 @@ Tiempo en segundos paralelo 4.328085
 Tiempo en segundos balance 4.304563 
 Tiempo en segundos paralelo 4.372249 
 Tiempo en segundos balance 4.304461 
+
+
 paralelos12@postgrado12:~/Distribuidos$ mpirun --bind-to none -np 4 -machinefile archivoMaquinas Ej1h 2048 4
 Tiempo en segundos paralelo 29.876833 
 Tiempo en segundos balance 29.629048 
