@@ -30,7 +30,7 @@ typedef struct param
 //Variables globales
 
 // Matrices
-basetype *A
+basetype *A;
 basetype *B;
 basetype *C;
 basetype *D;
@@ -376,7 +376,6 @@ int main(int argc,char *argv[])
 	printf("etapa 3\n");
 	multiplicacion_secuencial(ULA,AC,ulAAC,N);
 
-
 	printf("etapa 4\n");
 	promedioBSECUENCIAL();
 
@@ -385,7 +384,6 @@ int main(int argc,char *argv[])
 
 	printf("etapa 6\n");
 	multiplicacionXTriangularLSECUENCIAL(BE,LT,bLBE,N);
-
 
 	printf("etapa 7\n");
 	prod_escalarSECUENCIAL(bLBE,promB,bLBE);
@@ -396,14 +394,11 @@ int main(int argc,char *argv[])
 	printf("etapa 9\n");
 	multiplicacionXTriangularUSECUENCIAL(F,UT,UF,N);
 
-
 	printf("etapa 10\n");
 	multiplicacion_secuencial(bD,UF,bDUF,N);
 
-
 	printf("etapa 11\n");
 	suma_matrizSECUENCIAL(ulAAC,bLBE,ULLACbLBE);
-
 
 	printf("etapa 12\n");
 	resultado= (basetype*)malloc(sizeof(basetype)*N*N);
@@ -422,29 +417,54 @@ int main(int argc,char *argv[])
 	//Libera memoria
 
 	free(resultado);
+	printf("free resultado\n");
 	free(A);
+	printf("free A\n");
 	free(B);
+	printf("free B\n");
 	free(C);
+	printf("free C\n");
 	free(D);
+	printf("free D\n");
 	free(E);
+	printf("free E\n");
 	free(F);
+	printf("free F\n");
 	free(L);
-	free(U);
-	free(LT);
-	free(UT);
+	printf("free L\n");
+	//free(U);
+	printf("free U\n");
+	//free(LT);
+	printf("free LT\n");
+	//free(UT);
+	printf("free UT\n");
 	free(AC);
+	printf("free AC\n");
 	free(ULA);
+	printf("free ULA\n");
 	free(ulAAC);
+	printf("free ulAAC\n");
 	free(BE);
+	printf("free BE\n");
 	free(bLBE);
+	printf("free bLBE\n");
 	free(bD);
+	printf("free bD\n");
 	free(UF);
+	printf("free UF\n");
 	free(bDUF);
+	printf("free bDUF\n");
 	free(ULLACbLBE);
+	printf("free ULLACbLBE\n");
 	return(0);
 }
 
 
+
+
+     /////////////////////////////////////////////////////////////////Fin main
+    /////////////////////////////////////////////////////////////////         
+   /////////////////////////////////////////////////////////////////          
 
 
 
