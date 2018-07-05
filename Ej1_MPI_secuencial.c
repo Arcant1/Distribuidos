@@ -108,6 +108,8 @@ int main(int argc, char** argv){
 
 	timetick = dwalltime();
 
+	basetype t1,t2,t3,t4,t5,t6;
+
 	//*********Promedio L**********
 
 	// Buffer para la Matriz LT
@@ -146,26 +148,33 @@ int main(int argc, char** argv){
 
 	
 
+	t1=dwalltime();
 
 	ab_temp= multiplicacion_secuencial(A,B,N);				//AB
+	printf("Multiplicacion 1 tarda = %f  \n", dwalltime() - t1);
 
 
 	//multiplicacionXTriangularUSECUENCIAL(D,UT,DU_temp,N,NT);	//DU
+	t2=dwalltime();
 	DU_temp= multiplicacion_secuencial(D,U,N);				
-
+	printf("Multiplicacion 2 tarda = %f  \n", dwalltime() - t2);
 
 	//multiplicacionXTriangularLSECUENCIAL(C,LT,LC_temp,N,NT);	//CL
+	t3=dwalltime();
 	LC_temp=multiplicacion_secuencial(C,L,N);				
+	printf("Multiplicacion 3 tarda = %f  \n", dwalltime() - t3);
 
-
+	t4=dwalltime();
 	ab_temp = suma_matrizSECUENCIAL(ab_temp,LC_temp,N);
+	printf("sum1 1 tarda = %f  \n", dwalltime() - t4);
 
-
+	t5=dwalltime();
 	ab_temp = suma_matrizSECUENCIAL(ab_temp,DU_temp,N);
+	printf("Suma 2 tarda = %f  \n", dwalltime() - t5);
 
-
-
+	t6=dwalltime();
 	ab_temp= prod_escalarSECUENCIAL(ab_temp,escalar,N);
+	printf("Prod escalar tarda = %f  \n", dwalltime() - t6);
 
 											//
 
@@ -286,7 +295,7 @@ basetype * multiplicacion_secuencial(basetype *A,basetype *B,int N)
 			total=0;
 			for(k=0;k<N;k++)
 			{
-				total+=A[i*N+k]*B[k*N+j];	// total=A*B
+				total+=A[i*N+k]*B[k+N*j];	// total=A*B
 			}
 			C[i*N+j] = total;		// C=total
 		}

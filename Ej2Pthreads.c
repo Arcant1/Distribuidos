@@ -125,7 +125,7 @@ int main(int argc,char *argv[])
 	}
 
 	N = atoi(argv[1]);	//Dimensión de la matriz: N*N
-	NT = N*N-(N*(N+1))/2;
+	NT = N*N-(N*(N+1))/2; ///warda
 	CANT_THREADS = atoi(argv[2]);
 
 	printf("Dimensión de la matriz: %d*%d \n",N,N);
@@ -685,8 +685,8 @@ void multiplicacionXTriangularL(param* parametro, basetype * m1, basetype * m2, 
 	int id = (*parametro).id;
 	basetype total;
 	basetype aux;
-	//Filas que multiplica el thread
-	int cant_filas = dim/CANT_THREADS;	//Cant de filas que multiplica cada thread
+												//Filas que multiplica el thread
+	int cant_filas = dim/CANT_THREADS;			//Cant de filas que multiplica cada thread
 	int fila_inicial = id*cant_filas;
 	int fila_final = fila_inicial + cant_filas -1;
 
@@ -701,10 +701,7 @@ void multiplicacionXTriangularL(param* parametro, basetype * m1, basetype * m2, 
 			{
 				if(i<=j)
 				{
-					//p=j + j*(j+1)/2;
-					//if (p > 1500000)printf("%d %d\n",j,k);
-					//printf("%lu \n",p);
-					aux=m2[	k + j*(j+1)/2];
+					aux =	m2[	k + j*(j+1)/2];
 				}
 				else
 					aux = 0;
