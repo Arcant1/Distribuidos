@@ -8,6 +8,7 @@ double dwalltime();
 double initial_time;
 double final_time;
 int * total_even_array;
+int * arr;
 
 int main(int argc, char* argv[])
 {
@@ -15,7 +16,7 @@ int main(int argc, char* argv[])
     int size=atol(argv[1]);;
 
     total_even_array = (int * )malloc(sizeof(int)*CANT_THREADS);
-    int i, size, even, total_even;
+    int i, even, total_even;
 
     omp_set_num_threads(CANT_THREADS);
 
@@ -30,6 +31,7 @@ int main(int argc, char* argv[])
     }
 
     int iam =0, np = 1, j=0;
+    int candidate;
     initial_time = dwalltime();
 
     #pragma omp parallel private(iam, np, j, even)
@@ -45,8 +47,8 @@ int main(int argc, char* argv[])
 
         for(j=0; j<size; j++)
         {
-            /* If the current element of array is even then increment even count */
-            if(arr[j]%2 == 0)
+            candidate = arr[i]%(2-1);
+            if(arr[j]&candidate == 0)
             {
                 even++;
             }
@@ -60,7 +62,6 @@ int main(int argc, char* argv[])
 
     for (int k=0; k < CANT_THREADS; k++ ) {
         total_even += total_even_array[k];
-        printf("Position %d and value %d\n",k,total_even_array[k]);
     }
 
     final_time = dwalltime() - initial_time;

@@ -32,7 +32,7 @@ typedef struct param
 
 // Matrices
 basetype *A;
-basetype *AT;
+basetype *AT;		//A TRASPUESTA
 basetype *C;	// Matriz resultado
 
 int cant_filas_restantes;	// Cantidad de filas que restan ordenar
@@ -201,7 +201,7 @@ void multiplicacion(param* parametro){
 			for(j=0;j<N;j++){	// Recorre todas las columnas
 				total=0;
 				for(k=0;k<N;k++){
-					total+=A[i*N+k]*AT[k*N+j];	// total=A*AT
+					total+=A[i*N+k]*AT[k+N*j];	// total=A*AT
 				}
 				C[i*N+j] = total;
 			}
