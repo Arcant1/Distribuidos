@@ -269,3 +269,375 @@ paralelos12@postgrado12:~/Distribuidos$ ./Ej1SEC 2048
 Fin Inicializacion
 Tiempo en segundos 403.322483 
 
+
+
+///////////////////////////////////////////////////////////////////////
+
+
+paralelos12@postgrado12:~/Distribuidos$ mpirun -np 4 Ej1MPI 512
+Proceso 0, Promedio u = 2.003906 
+Proceso 1, Promedio u = 2.003906 
+Proceso 2, Promedio u = 2.003906 
+Proceso 3, Promedio u = 2.003906 
+Proceso 0, Promedio l = 0.500977 
+Proceso 1, Promedio l = 0.500977 
+Proceso 2, Promedio l = 0.500977 
+Proceso 3, Promedio l = 0.500977 
+Tiempo en segundos 0.416120 
+Tiempo en segundos 0.464932 
+Tiempo en segundos 0.504321 
+Tiempo en segundos 0.516337 
+paralelos12@postgrado12:~/Distribuidos$ mpirun --bind-to none -np 4 -machinefile archivoMaquinas Ej1h 2048 4
+Tiempo en segundos paralelo 30.418541 
+Tiempo en segundos balance 30.176768 
+Tiempo en segundos paralelo 32.474391 
+Tiempo en segundos balance 32.232609 
+Tiempo en segundos paralelo 33.698164 
+Tiempo en segundos balance 33.627547 
+Tiempo en segundos paralelo 33.869178 
+Tiempo en segundos balance 33.627459 
+paralelos12@postgrado12:~/Distribuidos$ mpicc -o Ej1MPI Ej1_MPI.c
+paralelos12@postgrado12:~/Distribuidos$ mpirun --bind-to none -np 4 -machinefile archivoMaquinas Ej1MPI 512 4
+Proceso 0, Promedio u = 2.003906 
+Proceso 1, Promedio u = 2.003906 
+Proceso 2, Promedio u = 2.003906 
+Proceso 3, Promedio u = 2.003906 
+Proceso 0, Promedio l = 0.500977 
+Proceso 1, Promedio l = 0.500977 
+Proceso 2, Promedio l = 0.500977 
+Proceso 3, Promedio l = 0.500977 
+Tiempo de procesamiento en cada host 0.343363 
+Tiempo de procesamiento en cada host 0.391708 
+Tiempo de overhead de comunicacion 0.011767 
+Tiempo en segundos 0.403475 
+Tiempo de procesamiento en cada host 0.442250 
+Tiempo de overhead de comunicacion 0.020890 
+Tiempo en segundos 0.463140 
+Tiempo de procesamiento en cada host 0.493756 
+Tiempo de overhead de comunicacion 0.158858 
+Tiempo de overhead de comunicacion 0.021052 
+Tiempo en segundos 0.514808 
+Tiempo en segundos 0.502221 
+paralelos12@postgrado12:~/Distribuidos$ mpirun --bind-to none -np 4 -machinefile archivoMaquinas Ej1MPI 1024 4
+Proceso 0, Promedio u = 2.001953 
+Proceso 1, Promedio u = 2.001953 
+Proceso 2, Promedio u = 2.001953 
+Proceso 3, Promedio u = 2.001953 
+Proceso 0, Promedio l = 0.500488 
+Proceso 1, Promedio l = 0.500488 
+Proceso 2, Promedio l = 0.500488 
+Proceso 3, Promedio l = 0.500488 
+Tiempo de procesamiento en cada host 2.690698 
+Tiempo de procesamiento en cada host 3.042732 
+Tiempo de overhead de comunicacion 0.072082 
+Tiempo en segundos 3.114814 
+Tiempo de procesamiento en cada host 3.446981 
+Tiempo de overhead de comunicacion 0.071715 
+Tiempo en segundos 3.518696 
+Tiempo de procesamiento en cada host 3.818359 
+Tiempo de overhead de comunicacion 1.154749 
+Tiempo en segundos 3.845447 
+Tiempo de overhead de comunicacion 0.072439 
+Tiempo en segundos 3.890798 
+paralelos12@postgrado12:~/Distribuidos$ mpirun --bind-to none -np 4 -machinefile archivoMaquinas Ej1MPI 2048 4
+Proceso 0, Promedio u = 2.000977 
+Proceso 1, Promedio u = 2.000977 
+Proceso 2, Promedio u = 2.000977 
+Proceso 3, Promedio u = 2.000977 
+Proceso 0, Promedio l = 0.500244 
+Proceso 1, Promedio l = 0.500244 
+Proceso 2, Promedio l = 0.500244 
+Proceso 3, Promedio l = 0.500244 
+Tiempo de procesamiento en cada host 20.916185 
+Tiempo de procesamiento en cada host 24.106431 
+Tiempo de overhead de comunicacion 0.262911 
+Tiempo en segundos 24.369342 
+Tiempo de procesamiento en cada host 27.302719 
+Tiempo de overhead de comunicacion 0.262522 
+Tiempo en segundos 27.565241 
+Tiempo de procesamiento en cada host 30.479143 
+Tiempo de overhead de comunicacion 9.647963 
+Tiempo en segundos 30.564148 
+Tiempo de overhead de comunicacion 0.264239 
+Tiempo en segundos 30.743382 
+paralelos12@postgrado12:~/Distribuidos$ mpirun --bind-to none -np 4 -machinefile archivoMaquinas Ej1MPI 512 8
+Proceso 0, Promedio u = 2.003906 
+Proceso 1, Promedio u = 2.003906 
+Proceso 2, Promedio u = 2.003906 
+Proceso 3, Promedio u = 2.003906 
+Proceso 0, Promedio l = 0.500977 
+Proceso 1, Promedio l = 0.500977 
+Proceso 2, Promedio l = 0.500977 
+Proceso 3, Promedio l = 0.500977 
+Tiempo de procesamiento en cada host 0.343076 
+Tiempo de procesamiento en cada host 0.394758 
+Tiempo de overhead de comunicacion 0.022205 
+Tiempo en segundos 0.416963 
+Tiempo de procesamiento en cada host 0.443402 
+Tiempo de overhead de comunicacion 0.021875 
+Tiempo en segundos 0.465277 
+Tiempo de procesamiento en cada host 0.493074 
+Tiempo de overhead de comunicacion 0.158762 
+Tiempo en segundos 0.501838 
+Tiempo de overhead de comunicacion 0.022100 
+Tiempo en segundos 0.515174 
+paralelos12@postgrado12:~/Distribuidos$ mpirun --bind-to none -np 8 -machinefile archivoMaquinas Ej1MPI 512 8
+Proceso 0, Promedio u = 4.007812 
+Proceso 1, Promedio u = 4.007812 
+Proceso 2, Promedio u = 4.007812 
+Proceso 3, Promedio u = 4.007812 
+Proceso 4, Promedio u = 4.007812 
+Proceso 1, Promedio l = 0.500977 
+Proceso 2, Promedio l = 0.500977 
+Proceso 3, Promedio l = 0.500977 
+Proceso 0, Promedio l = 0.500977 
+Proceso 5, Promedio u = 4.007812 
+Proceso 6, Promedio u = 4.007812 
+Proceso 7, Promedio u = 4.007812 
+Proceso 4, Promedio l = 0.500977 
+Proceso 5, Promedio l = 0.500977 
+Proceso 6, Promedio l = 0.500977 
+Proceso 7, Promedio l = 0.500977 
+Tiempo de procesamiento en cada host 0.162055 
+Tiempo de procesamiento en cada host 0.170147 
+Tiempo de overhead de comunicacion 0.237855 
+Tiempo en segundos 0.408002 
+Tiempo de procesamiento en cada host 0.183231 
+Tiempo de overhead de comunicacion 0.237828 
+Tiempo en segundos 0.421059 
+Tiempo de procesamiento en cada host 0.196250 
+Tiempo de overhead de comunicacion 0.237857 
+Tiempo en segundos 0.434107 
+Tiempo de procesamiento en cada host 0.214263 
+Tiempo de overhead de comunicacion 0.241319 
+Tiempo en segundos 0.455582 
+Tiempo de procesamiento en cada host 0.227684 
+Tiempo de overhead de comunicacion 0.239301 
+Tiempo en segundos 0.466985 
+Tiempo de procesamiento en cada host 0.239766 
+Tiempo de overhead de comunicacion 0.239618 
+Tiempo en segundos 0.479384 
+Tiempo de procesamiento en cada host 0.254102 
+Tiempo de overhead de comunicacion 0.239712 
+Tiempo en segundos 0.493814 
+Tiempo de overhead de comunicacion 0.316639 
+Tiempo en segundos 0.478694 
+paralelos12@postgrado12:~/Distribuidos$ mpirun --bind-to none -np 8 -machinefile archivoMaquinas Ej1MPI 1024 8
+Proceso 0, Promedio u = 4.003906 
+Proceso 4, Promedio u = 4.003906 
+Proceso 3, Promedio u = 4.003906 
+Proceso 7, Promedio u = 4.003906 
+Proceso 2, Promedio u = 4.003906 
+Proceso 1, Promedio u = 4.003906 
+Proceso 6, Promedio u = 4.003906 
+Proceso 5, Promedio u = 4.003906 
+Proceso 0, Promedio l = 0.500488 
+Proceso 1, Promedio l = 0.500488 
+Proceso 2, Promedio l = 0.500488 
+Proceso 3, Promedio l = 0.500488 
+Proceso 6, Promedio l = 0.500488 
+Proceso 7, Promedio l = 0.500488 
+Proceso 4, Promedio l = 0.500488 
+Proceso 5, Promedio l = 0.500488 
+Tiempo de procesamiento en cada host 1.272098 
+Tiempo de procesamiento en cada host 1.370393 
+Tiempo de overhead de comunicacion 0.401130 
+Tiempo en segundos 1.771523 
+Tiempo de procesamiento en cada host 1.468890 
+Tiempo de overhead de comunicacion 0.401060 
+Tiempo en segundos 1.869950 
+Tiempo de procesamiento en cada host 1.561426 
+Tiempo de overhead de comunicacion 0.401102 
+Tiempo en segundos 1.962528 
+Tiempo de procesamiento en cada host 1.725589 
+Tiempo de overhead de comunicacion 0.410035 
+Tiempo en segundos 2.135624 
+Tiempo de procesamiento en cada host 1.824885 
+Tiempo de overhead de comunicacion 0.408847 
+Tiempo en segundos 2.233732 
+Tiempo de procesamiento en cada host 1.928982 
+Tiempo de overhead de comunicacion 0.408686 
+Tiempo en segundos 2.337668 
+Tiempo de procesamiento en cada host 2.031721 
+Tiempo de overhead de comunicacion 0.408737 
+Tiempo en segundos 2.440458 
+Tiempo de overhead de comunicacion 1.124114 
+Tiempo en segundos 2.396212 
+paralelos12@postgrado12:~/Distribuidos$ mpirun --bind-to none -np 8 -machinefile archivoMaquinas Ej1MPI 2048 8
+Proceso 0, Promedio u = 4.001953 
+Proceso 2, Promedio u = 4.001953 
+Proceso 4, Promedio u = 4.001953 
+Proceso 6, Promedio u = 4.001953 
+Proceso 3, Promedio u = 4.001953 
+Proceso 7, Promedio u = 4.001953 
+Proceso 1, Promedio u = 4.001953 
+Proceso 5, Promedio u = 4.001953 
+Proceso 3, Promedio l = 0.500244 
+Proceso 2, Promedio l = 0.500244 
+Proceso 0, Promedio l = 0.500244 
+Proceso 1, Promedio l = 0.500244 
+Proceso 7, Promedio l = 0.500244 
+Proceso 4, Promedio l = 0.500244 
+Proceso 6, Promedio l = 0.500244 
+Proceso 5, Promedio l = 0.500244 
+Tiempo de procesamiento en cada host 10.100881 
+Tiempo de procesamiento en cada host 10.854272 
+Tiempo de overhead de comunicacion 1.517791 
+Tiempo en segundos 12.372063 
+Tiempo de procesamiento en cada host 11.670652 
+Tiempo de overhead de comunicacion 1.517507 
+Tiempo en segundos 13.188159 
+Tiempo de procesamiento en cada host 12.452972 
+Tiempo de overhead de comunicacion 1.517401 
+Tiempo en segundos 13.970373 
+Tiempo de procesamiento en cada host 13.699526 
+Tiempo de overhead de comunicacion 1.552171 
+Tiempo en segundos 15.251697 
+Tiempo de procesamiento en cada host 14.515665 
+Tiempo de overhead de comunicacion 1.550866 
+Tiempo en segundos 16.066531 
+Tiempo de procesamiento en cada host 15.338568 
+Tiempo de overhead de comunicacion 1.551107 
+Tiempo en segundos 16.889675 
+Tiempo de procesamiento en cada host 16.162729 
+Tiempo de overhead de comunicacion 1.551070 
+Tiempo en segundos 17.713799 
+Tiempo de overhead de comunicacion 7.431149 
+Tiempo en segundos 17.532030 
+paralelos12@postgrado12:~/Distribuidos$ 
+
+
+
+
+
+
+
+
+
+
+
+/////////////////////////////////////////
+
+
+paralelos12@postgrado12:~/Distribuidos$ mpirun --bind-to none -np 8 -machinefile archivoMaquinas E2E2 512 8
+Tiempo de procesamiento en cada host 2.043320 
+Tiempo de procesamiento en cada host 2.253141 
+Tiempo en segundos paralelo 2.458381 
+Tiempo en segundos balance 2.253368 
+Tiempo de procesamiento en cada host 2.326032 
+Tiempo en segundos paralelo 2.531333 
+Tiempo en segundos balance 2.326247 
+Tiempo de procesamiento en cada host 2.373283 
+Tiempo en segundos paralelo 2.584279 
+Tiempo en segundos balance 2.373466 
+Tiempo de procesamiento en cada host 2.781670 
+Tiempo en segundos paralelo 2.997975 
+Tiempo en segundos balance 2.784478 
+Tiempo de procesamiento en cada host 2.888895 
+Tiempo en segundos paralelo 3.096901 
+Tiempo en segundos balance 2.890684 
+Tiempo de procesamiento en cada host 3.015178 
+Tiempo en segundos paralelo 3.223029 
+Tiempo en segundos balance 3.016803 
+Tiempo de procesamiento en cada host 3.036939 
+Tiempo en segundos paralelo 3.253489 
+Tiempo en segundos balance 3.039010 
+Tiempo en segundos paralelo 3.240987 
+Tiempo en segundos balance 3.041080 
+Tiempo de overhead 1.197667 
+paralelos12@postgrado12:~/Distribuidos$ mpirun --bind-to none -np 8 -machinefile archivoMaquinas E2E2 1024 8
+Tiempo de procesamiento en cada host 16.524720 
+Tiempo de procesamiento en cada host 17.607072 
+Tiempo en segundos paralelo 18.004831 
+Tiempo en segundos balance 17.626380 
+Tiempo de procesamiento en cada host 18.298951 
+Tiempo en segundos paralelo 18.680600 
+Tiempo en segundos balance 18.299548 
+Tiempo de procesamiento en cada host 18.740782 
+Tiempo en segundos paralelo 19.123695 
+Tiempo en segundos balance 18.741210 
+Tiempo de procesamiento en cada host 22.492921 
+Tiempo en segundos paralelo 22.886677 
+Tiempo en segundos balance 22.503225 
+Tiempo de procesamiento en cada host 23.476215 
+Tiempo en segundos paralelo 23.867821 
+Tiempo en segundos balance 23.484349 
+Tiempo de procesamiento en cada host 24.186194 
+Tiempo en segundos paralelo 24.578042 
+Tiempo en segundos balance 24.194564 
+Tiempo de procesamiento en cada host 24.450431 
+Tiempo en segundos paralelo 24.842052 
+Tiempo en segundos balance 24.458586 
+Tiempo en segundos paralelo 24.799211 
+Tiempo en segundos balance 24.467912 
+Tiempo de overhead 8.274491 
+paralelos12@postgrado12:~/Distribuidos$ mpirun --bind-to none -np 8 -machinefile archivoMaquinas E2E2 2048 8
+Tiempo de procesamiento en cada host 130.679360 
+Tiempo de procesamiento en cada host 138.648111 
+Tiempo en segundos paralelo 140.121679 
+Tiempo en segundos balance 138.649389 
+Tiempo de procesamiento en cada host 144.103950 
+Tiempo en segundos paralelo 145.580646 
+Tiempo en segundos balance 144.105633 
+Tiempo de procesamiento en cada host 147.188861 
+Tiempo en segundos paralelo 148.666361 
+Tiempo en segundos balance 147.189871 
+Tiempo de procesamiento en cada host 183.044383 
+Tiempo en segundos paralelo 184.568521 
+Tiempo en segundos balance 183.091058 
+Tiempo de procesamiento en cada host 187.305756 
+Tiempo en segundos paralelo 188.818237 
+Tiempo en segundos balance 187.340764 
+Tiempo de procesamiento en cada host 193.431551 
+Tiempo en segundos paralelo 194.987377 
+Tiempo en segundos balance 193.509904 
+Tiempo de procesamiento en cada host 195.820809 
+Tiempo en segundos paralelo 197.333566 
+Tiempo en segundos balance 195.856095 
+Tiempo en segundos paralelo 197.159486 
+Tiempo en segundos balance 195.866343 
+Tiempo de overhead 66.480126 
+paralelos12@postgrado12:~/Distribuidos$ mpirun --bind-to none -np 4 -machinefile archivoMaquinas E2E2 2048 4
+Tiempo de procesamiento en cada host 136.613760 
+Tiempo de procesamiento en cada host 153.827802 
+Tiempo en segundos paralelo 154.113770 
+Tiempo en segundos balance 153.829935 
+Tiempo de procesamiento en cada host 165.356560 
+Tiempo en segundos paralelo 165.643957 
+Tiempo en segundos balance 165.360088 
+Tiempo de procesamiento en cada host 172.488269 
+Tiempo en segundos paralelo 172.595674 
+Tiempo en segundos balance 172.492021 
+Tiempo de overhead 35.981914 
+Tiempo en segundos paralelo 172.775869 
+Tiempo en segundos balance 172.491933 
+paralelos12@postgrado12:~/Distribuidos$ mpirun --bind-to none -np 4 -machinefile archivoMaquinas E2E2 1024 4
+Tiempo de procesamiento en cada host 17.069186 
+Tiempo de procesamiento en cada host 19.719609 
+Tiempo en segundos paralelo 19.787567 
+Tiempo en segundos balance 19.721967 
+Tiempo de procesamiento en cada host 20.839171 
+Tiempo en segundos paralelo 20.926221 
+Tiempo en segundos balance 20.860633 
+Tiempo en segundos paralelo 21.847521 
+Tiempo en segundos balance 21.824974 
+Tiempo de overhead 4.778335 
+Tiempo de procesamiento en cada host 21.823750 
+Tiempo en segundos paralelo 21.890549 
+Tiempo en segundos balance 21.824871 
+paralelos12@postgrado12:~/Distribuidos$ mpirun --bind-to none -np 4 -machinefile archivoMaquinas E2E2 512 4
+Tiempo de procesamiento en cada host 2.168067 
+Tiempo de procesamiento en cada host 2.515543 
+Tiempo en segundos paralelo 2.548546 
+Tiempo en segundos balance 2.527992 
+Tiempo de procesamiento en cada host 2.644335 
+Tiempo en segundos paralelo 2.720216 
+Tiempo en segundos balance 2.699778 
+Tiempo de procesamiento en cada host 2.741660 
+Tiempo en segundos paralelo 2.749155 
+Tiempo en segundos balance 2.742138 
+Tiempo de overhead 0.581088 
+Tiempo en segundos paralelo 2.762324 
+Tiempo en segundos balance 2.742138 
+
+

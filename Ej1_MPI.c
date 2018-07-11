@@ -26,6 +26,7 @@ int main(int argc, char** argv){
 	double *A,*B,*C,*D,*L,*U,*M;
 	double u=0.0,l=0.0;
 	double t_p;
+	double t2;
 
 
 	MPI_Init(&argc, &argv);
@@ -99,6 +100,7 @@ int main(int argc, char** argv){
 	MPI_Bcast(U, sizeTrian, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
 	// Promedio de U
+
 	double temp=0;
 
 	for(int i=0;i<sizeTrian;i++)
@@ -126,6 +128,7 @@ int main(int argc, char** argv){
 	printf("Proceso %d, Promedio l = %lf \n",miID,l);
 
 //--------------------------------------------------------
+	t2 = dwalltime();
 	for(int i=0;i<buf/N;i++){
 		for(int j=0;j<N;j++){
 			ab_temp[i*N+j]=0;
@@ -168,10 +171,13 @@ int main(int argc, char** argv){
 	for (int i=0;i<buf;i++){
 		ab_temp[i]+=lc_temp[i]+du_temp[i];
 	}
+	t2=dwalltime() - t2;
+	printf("Tiempo de procesamiento en cada host %f \n", t2);
 
 	MPI_Gather(ab_temp, buf, MPI_DOUBLE, M, buf, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
 	t_p = dwalltime() - t_p;
+	printf("Tiempo de overhead de comunicacion %f \n", t_p - t2);
 	printf("Tiempo en segundos %f \n", t_p);
 
 	

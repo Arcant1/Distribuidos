@@ -6,7 +6,15 @@
 #include "mpi.h"
 #include <omp.h>
 
+//Para calcular tiempo
+double dwalltime(){
+        double sec;
+        struct timeval tv;
 
+        gettimeofday(&tv,NULL);
+        sec = tv.tv_sec + tv.tv_usec/1000000.0;
+        return sec;
+}
 
 int main(int argc, char** argv){
 
@@ -19,7 +27,7 @@ int main(int argc, char** argv){
 	double *A,*B,*C,*D,*L,*U,*M;
 	double u=0.0,l=0.0;
 	double tiempo_paral, tiempo_balance;
-
+	double t2;
 
 	MPI_Init(&argc, &argv);
 	MPI_Comm_rank(MPI_COMM_WORLD,&miID);
@@ -94,7 +102,7 @@ int main(int argc, char** argv){
 
 	// Promedio de U
 	double temp=0;
-	
+	t2=dwalltime();
 	#pragma omp parallel for ordered reduction(+ : temp) schedule(static)
 	for(int i=0;i<dimTriangular;i++)
 		temp+=U[i];
@@ -170,12 +178,17 @@ int main(int argc, char** argv){
 		ab_temp[i]+=lc_temp[i]+du_temp[i];
 	}
 	}
-	MPI_Gather(ab_temp, buf, MPI_DOUBLE, M, buf, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	t2=dwalltime()-t2;
 
+	printf("Tiempo de procesamiento en cada host %f \n", t2);
+	MPI_Gather(ab_temp, buf, MPI_DOUBLE, M, buf, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	
+	
 	tiempo_paral = dwalltime() - tiempo_paral;
 	tiempo_balance = dwalltime() - tiempo_balance;
 	printf("Tiempo en segundos paralelo %f \n", tiempo_paral);
 	printf("Tiempo en segundos balance %f \n", tiempo_balance);
+	if(miID==0)printf("Tiempo de overhead %f \n", tiempo_paral - t2);
 
 	//***** FIN PROGRAMA ****
 	
@@ -198,12 +211,4 @@ int main(int argc, char** argv){
 	return(0);
 }
 
-//Para calcular tiempo
-double dwalltime(){
-        double sec;
-        struct timeval tv;
 
-        gettimeofday(&tv,NULL);
-        sec = tv.tv_sec + tv.tv_usec/1000000.0;
-        return sec;
-}
