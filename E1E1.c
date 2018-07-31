@@ -57,6 +57,7 @@ void *funcion_threads(void *arg);
 void multiplicacion(param *parametro);
 void imprimir_matriz (basetype * matriz,int N);
 double dwalltime();
+basetype * trasponer(basetype * m, int n);
 double tiempo_copia_total=0;
 
 #ifdef COMPARAR_SECUENCIAL
@@ -86,7 +87,6 @@ int main(int argc,char *argv[]){
 
 	// Reserva de memoria para las matrices
 	A=(basetype*)malloc(sizeof(basetype)*N*N);			// Reserva memoria para A
-	AT=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para B
 	C=(basetype*)malloc(N*N*sizeof(basetype));			// Reserva memoria para C
 
 	#ifdef COMPARAR_SECUENCIAL
@@ -101,15 +101,15 @@ int main(int argc,char *argv[]){
 		for(j=0;j<N;j++)
 		{
 			A[i*N+j]=rand()%5;  	// Inicializa matriz A con random
-			AT[i+N*j]=A[i*N+j]; 	//traspongo la matriz A
 		}
 	}
+	AT=trasponer(A,N);
 
 
 	param parametros[CANT_THREADS];	// Arreglo de param (struct que contiene los datos para pasar a los threads)
 
 	// -- Inicialización de threads --
-	pthread_t threads[CANT_THREADS];	// Arreglo de threads
+	pthread_t threads[CANT_THREADS];	// -- Arreglo de threads
 
 	if (pthread_barrier_init(&barrera,NULL,CANT_THREADS)!=0) {
         	printf("Error creacion de barrera\n");
@@ -250,12 +250,25 @@ void multiplicacion_secuencial(basetype *A,basetype *B,basetype *C,int N){
 			for(j=0;j<N;j++){
 				total=0;
 				for(k=0;k<N;k++){
-					total+=A[i*N+k]*B[k*N+j];	// total=A*B
+					total+=A[i*N+k]*B[k+N*j];	// total=A*B
 				}
 				C[i*N+j] = total;		// C=total
 			}
      	}
 
+}
+
+basetype * trasponer(basetype * matrix, int dim)
+{
+	basetype * res = (basetype*)malloc (sizeof(basetype)*dim*dim);
+	for (int i = 0; i < dim; ++i)
+	{
+		for (int j = 0; j < dim; ++j)
+		{
+			res[i+dim*j]=matrix[i*dim+j];
+		}
+	}
+	return res;
 }
 
 void verificar_resultado(basetype *C,basetype *C_secuencial,int N){
